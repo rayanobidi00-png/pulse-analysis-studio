@@ -1,0 +1,977 @@
+{
+  "n_rows": 649,
+  "n_cols": 33,
+  "total_na": 0,
+  "duplicates": 0,
+  "zero_g3": 15,
+  "absences_upper_fence": 15,
+  "absences_outliers": 21,
+  "types": [
+    {
+      "column": "school",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "sex",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "age",
+      "r_class": "integer",
+      "stat_type": "Numeric (discrete)"
+    },
+    {
+      "column": "address",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "famsize",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "Pstatus",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "Medu",
+      "r_class": "integer",
+      "stat_type": "Ordinal (0-4)"
+    },
+    {
+      "column": "Fedu",
+      "r_class": "integer",
+      "stat_type": "Ordinal (0-4)"
+    },
+    {
+      "column": "Mjob",
+      "r_class": "character",
+      "stat_type": "Nominal"
+    },
+    {
+      "column": "Fjob",
+      "r_class": "character",
+      "stat_type": "Nominal"
+    },
+    {
+      "column": "reason",
+      "r_class": "character",
+      "stat_type": "Nominal"
+    },
+    {
+      "column": "guardian",
+      "r_class": "character",
+      "stat_type": "Nominal"
+    },
+    {
+      "column": "traveltime",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-4)"
+    },
+    {
+      "column": "studytime",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-4)"
+    },
+    {
+      "column": "failures",
+      "r_class": "integer",
+      "stat_type": "Numeric (discrete 0-3)"
+    },
+    {
+      "column": "schoolsup",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "famsup",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "paid",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "activities",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "nursery",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "higher",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "internet",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "romantic",
+      "r_class": "character",
+      "stat_type": "Nominal (binary)"
+    },
+    {
+      "column": "famrel",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "freetime",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "goout",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "Dalc",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "Walc",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "health",
+      "r_class": "integer",
+      "stat_type": "Ordinal (1-5)"
+    },
+    {
+      "column": "absences",
+      "r_class": "integer",
+      "stat_type": "Numeric (discrete)"
+    },
+    {
+      "column": "G1",
+      "r_class": "integer",
+      "stat_type": "Numeric (0-20)"
+    },
+    {
+      "column": "G2",
+      "r_class": "integer",
+      "stat_type": "Numeric (0-20)"
+    },
+    {
+      "column": "G3",
+      "r_class": "integer",
+      "stat_type": "Numeric (0-20) - TARGET"
+    }
+  ],
+  "desc": [
+    {
+      "variable": "age",
+      "mean": 16.74422188,
+      "median": 17,
+      "mode": 17,
+      "sd": 1.21813764,
+      "var": 1.48385931,
+      "min": 15,
+      "q1": 16,
+      "q3": 18,
+      "max": 22,
+      "IQR": 2,
+      "_row": "age"
+    },
+    {
+      "variable": "absences",
+      "mean": 3.65947612,
+      "median": 2,
+      "mode": 0,
+      "sd": 4.64075881,
+      "var": 21.53664232,
+      "min": 0,
+      "q1": 0,
+      "q3": 6,
+      "max": 32,
+      "IQR": 6,
+      "_row": "absences"
+    },
+    {
+      "variable": "failures",
+      "mean": 0.22187982,
+      "median": 0,
+      "mode": 0,
+      "sd": 0.59323515,
+      "var": 0.35192794,
+      "min": 0,
+      "q1": 0,
+      "q3": 0,
+      "max": 3,
+      "IQR": 0,
+      "_row": "failures"
+    },
+    {
+      "variable": "studytime",
+      "mean": 1.93066256,
+      "median": 2,
+      "mode": 2,
+      "sd": 0.82950957,
+      "var": 0.68808613,
+      "min": 1,
+      "q1": 1,
+      "q3": 2,
+      "max": 4,
+      "IQR": 1,
+      "_row": "studytime"
+    },
+    {
+      "variable": "G1",
+      "mean": 11.3990755,
+      "median": 11,
+      "mode": 10,
+      "sd": 2.74526513,
+      "var": 7.53648063,
+      "min": 0,
+      "q1": 10,
+      "q3": 13,
+      "max": 19,
+      "IQR": 3,
+      "_row": "G1"
+    },
+    {
+      "variable": "G2",
+      "mean": 11.57010786,
+      "median": 11,
+      "mode": 11,
+      "sd": 2.91363866,
+      "var": 8.48929027,
+      "min": 0,
+      "q1": 10,
+      "q3": 13,
+      "max": 19,
+      "IQR": 3,
+      "_row": "G2"
+    },
+    {
+      "variable": "G3",
+      "mean": 11.90600924,
+      "median": 12,
+      "mode": 11,
+      "sd": 3.23065624,
+      "var": 10.43713976,
+      "min": 0,
+      "q1": 10,
+      "q3": 14,
+      "max": 19,
+      "IQR": 4,
+      "_row": "G3"
+    }
+  ],
+  "freq": [
+    {
+      "variable": "school",
+      "level": "Gabriel Pereira",
+      "n": 423,
+      "pct": 65.18
+    },
+    {
+      "variable": "school",
+      "level": "Mousinho da Silveira",
+      "n": 226,
+      "pct": 34.82
+    },
+    {
+      "variable": "sex",
+      "level": "Female",
+      "n": 383,
+      "pct": 59.01
+    },
+    {
+      "variable": "sex",
+      "level": "Male",
+      "n": 266,
+      "pct": 40.99
+    },
+    {
+      "variable": "address",
+      "level": "Urban",
+      "n": 452,
+      "pct": 69.65
+    },
+    {
+      "variable": "address",
+      "level": "Rural",
+      "n": 197,
+      "pct": 30.35
+    },
+    {
+      "variable": "higher",
+      "level": "no",
+      "n": 69,
+      "pct": 10.63
+    },
+    {
+      "variable": "higher",
+      "level": "yes",
+      "n": 580,
+      "pct": 89.37
+    },
+    {
+      "variable": "internet",
+      "level": "no",
+      "n": 151,
+      "pct": 23.27
+    },
+    {
+      "variable": "internet",
+      "level": "yes",
+      "n": 498,
+      "pct": 76.73
+    },
+    {
+      "variable": "romantic",
+      "level": "no",
+      "n": 410,
+      "pct": 63.17
+    },
+    {
+      "variable": "romantic",
+      "level": "yes",
+      "n": 239,
+      "pct": 36.83
+    },
+    {
+      "variable": "Mjob",
+      "level": "at_home",
+      "n": 135,
+      "pct": 20.8
+    },
+    {
+      "variable": "Mjob",
+      "level": "health",
+      "n": 48,
+      "pct": 7.4
+    },
+    {
+      "variable": "Mjob",
+      "level": "other",
+      "n": 258,
+      "pct": 39.75
+    },
+    {
+      "variable": "Mjob",
+      "level": "services",
+      "n": 136,
+      "pct": 20.96
+    },
+    {
+      "variable": "Mjob",
+      "level": "teacher",
+      "n": 72,
+      "pct": 11.09
+    },
+    {
+      "variable": "reason",
+      "level": "course",
+      "n": 285,
+      "pct": 43.91
+    },
+    {
+      "variable": "reason",
+      "level": "home",
+      "n": 149,
+      "pct": 22.96
+    },
+    {
+      "variable": "reason",
+      "level": "other",
+      "n": 72,
+      "pct": 11.09
+    },
+    {
+      "variable": "reason",
+      "level": "reputation",
+      "n": 143,
+      "pct": 22.03
+    }
+  ],
+  "pass_counts": {
+    "Fail": 100,
+    "Pass": 549
+  },
+  "grade_bands": {
+    "Fail (0-9)": 100,
+    "Sufficient (10-11)": 201,
+    "Good (12-13)": 154,
+    "Very good (14-15)": 112,
+    "Excellent (16-20)": 82
+  },
+  "by_study": [
+    {
+      "studytime_f": "<2 h",
+      "n": 212,
+      "mean_G3": 10.84,
+      "pass_rate": 76.4
+    },
+    {
+      "studytime_f": "2-5 h",
+      "n": 305,
+      "mean_G3": 12.09,
+      "pass_rate": 86.6
+    },
+    {
+      "studytime_f": "5-10 h",
+      "n": 97,
+      "mean_G3": 13.23,
+      "pass_rate": 92.8
+    },
+    {
+      "studytime_f": ">10 h",
+      "n": 35,
+      "mean_G3": 13.06,
+      "pass_rate": 94.3
+    }
+  ],
+  "by_fail": [
+    {
+      "failures_f": "0",
+      "n": 549,
+      "mean_G3": 12.51,
+      "pass_rate": 90.7
+    },
+    {
+      "failures_f": "1",
+      "n": 70,
+      "mean_G3": 8.64,
+      "pass_rate": 54.3
+    },
+    {
+      "failures_f": "2+",
+      "n": 30,
+      "mean_G3": 8.47,
+      "pass_rate": 43.3
+    }
+  ],
+  "by_higher": [
+    {
+      "higher": "no",
+      "n": 69,
+      "mean_G3": 8.8,
+      "pass_rate": 52.2
+    },
+    {
+      "higher": "yes",
+      "n": 580,
+      "mean_G3": 12.28,
+      "pass_rate": 88.4
+    }
+  ],
+  "by_mjob": [
+    {
+      "Mjob": "teacher",
+      "n": 72,
+      "mean_G3": 13.14
+    },
+    {
+      "Mjob": "health",
+      "n": 48,
+      "mean_G3": 13.06
+    },
+    {
+      "Mjob": "services",
+      "n": 136,
+      "mean_G3": 12.15
+    },
+    {
+      "Mjob": "other",
+      "n": 258,
+      "mean_G3": 11.67
+    },
+    {
+      "Mjob": "at_home",
+      "n": 135,
+      "mean_G3": 11.04
+    }
+  ],
+  "by_school_sex": [
+    {
+      "school": "Gabriel Pereira",
+      "sex": "Female",
+      "n": 237,
+      "mean_G3": 13,
+      "pass_rate": 96.2
+    },
+    {
+      "school": "Gabriel Pereira",
+      "sex": "Male",
+      "n": 186,
+      "mean_G3": 12.03,
+      "pass_rate": 87.6
+    },
+    {
+      "school": "Mousinho da Silveira",
+      "sex": "Female",
+      "n": 146,
+      "mean_G3": 11.03,
+      "pass_rate": 71.9
+    },
+    {
+      "school": "Mousinho da Silveira",
+      "sex": "Male",
+      "n": 80,
+      "mean_G3": 9.95,
+      "pass_rate": 66.2
+    }
+  ],
+  "by_medu": [
+    {
+      "Medu_f": "None",
+      "n": 6,
+      "mean_G3": 11.67
+    },
+    {
+      "Medu_f": "Primary 4th",
+      "n": 143,
+      "mean_G3": 10.8
+    },
+    {
+      "Medu_f": "5th-9th",
+      "n": 186,
+      "mean_G3": 11.66
+    },
+    {
+      "Medu_f": "Secondary",
+      "n": 139,
+      "mean_G3": 11.92
+    },
+    {
+      "Medu_f": "Higher",
+      "n": 175,
+      "mean_G3": 13.07
+    }
+  ],
+  "by_alc": [
+    {
+      "Dalc": 1,
+      "n": 451,
+      "mean_G3": 12.3
+    },
+    {
+      "Dalc": 2,
+      "n": 121,
+      "mean_G3": 11.36
+    },
+    {
+      "Dalc": 3,
+      "n": 43,
+      "mean_G3": 11.14
+    },
+    {
+      "Dalc": 4,
+      "n": 17,
+      "mean_G3": 8.94
+    },
+    {
+      "Dalc": 5,
+      "n": 17,
+      "mean_G3": 10.24
+    }
+  ],
+  "cor_vars": ["G1", "G2", "G3", "studytime", "failures", "absences", "Medu", "Fedu", "Dalc", "Walc", "goout", "freetime", "health", "age", "traveltime", "famrel"],
+  "cor_mat": [
+    [1, 0.865, 0.826, 0.261, -0.384, -0.147, 0.26, 0.218, -0.195, -0.156, -0.074, -0.094, -0.052, -0.174, -0.154, 0.049],
+    [0.865, 1, 0.919, 0.24, -0.386, -0.125, 0.264, 0.225, -0.189, -0.165, -0.079, -0.107, -0.082, -0.107, -0.154, 0.09],
+    [0.826, 0.919, 1, 0.25, -0.393, -0.091, 0.24, 0.212, -0.205, -0.177, -0.088, -0.123, -0.099, -0.107, -0.127, 0.063],
+    [0.261, 0.24, 0.25, 1, -0.147, -0.118, 0.097, 0.05, -0.138, -0.215, -0.075, -0.069, -0.056, -0.008, -0.063, -0.004],
+    [-0.384, -0.386, -0.393, -0.147, 1, 0.123, -0.172, -0.166, 0.106, 0.082, 0.045, 0.109, 0.036, 0.32, 0.098, -0.063],
+    [-0.147, -0.125, -0.091, -0.118, 0.123, 1, -0.009, 0.03, 0.173, 0.156, 0.085, -0.019, -0.03, 0.15, -0.008, -0.09],
+    [0.26, 0.264, 0.24, 0.097, -0.172, -0.009, 1, 0.647, -0.007, -0.02, 0.01, -0.02, 0.005, -0.108, -0.265, 0.024],
+    [0.218, 0.225, 0.212, 0.05, -0.166, 0.03, 0.647, 1, 0, 0.038, 0.028, 0.007, 0.045, -0.121, -0.208, 0.02],
+    [-0.195, -0.189, -0.205, -0.138, 0.106, 0.173, -0.007, 0, 1, 0.617, 0.245, 0.11, 0.059, 0.135, 0.093, -0.076],
+    [-0.156, -0.165, -0.177, -0.215, 0.082, 0.156, -0.02, 0.038, 0.617, 1, 0.389, 0.12, 0.115, 0.086, 0.057, -0.094],
+    [-0.074, -0.079, -0.088, -0.075, 0.045, 0.085, 0.01, 0.028, 0.245, 0.389, 1, 0.346, -0.016, 0.113, 0.057, 0.09],
+    [-0.094, -0.107, -0.123, -0.069, 0.109, -0.019, -0.02, 0.007, 0.11, 0.12, 0.346, 1, 0.085, -0.005, 0.001, 0.129],
+    [-0.052, -0.082, -0.099, -0.056, 0.036, -0.03, 0.005, 0.045, 0.059, 0.115, -0.016, 0.085, 1, -0.009, -0.048, 0.11],
+    [-0.174, -0.107, -0.107, -0.008, 0.32, 0.15, -0.108, -0.121, 0.135, 0.086, 0.113, -0.005, -0.009, 1, 0.034, -0.021],
+    [-0.154, -0.154, -0.127, -0.063, 0.098, -0.008, -0.265, -0.208, 0.093, 0.057, 0.057, 0.001, -0.048, 0.034, 1, -0.01],
+    [0.049, 0.09, 0.063, -0.004, -0.063, -0.09, 0.024, 0.02, -0.076, -0.094, 0.09, 0.129, 0.11, -0.021, -0.01, 1]
+  ],
+  "cor_G3": {
+    "failures": -0.393,
+    "Dalc": -0.205,
+    "Walc": -0.177,
+    "traveltime": -0.127,
+    "freetime": -0.123,
+    "age": -0.107,
+    "health": -0.099,
+    "absences": -0.091,
+    "goout": -0.088,
+    "famrel": 0.063,
+    "Fedu": 0.212,
+    "Medu": 0.24,
+    "studytime": 0.25,
+    "G1": 0.826,
+    "G2": 0.919
+  },
+  "spearman_study": 0.27471185,
+  "cor_test_G2G3": {
+    "r": 0.918548,
+    "p": 5.64240149e-263
+  },
+  "cor_test_fail": {
+    "r": -0.39331555,
+    "p": 1.93415327e-25
+  },
+  "t_one": {
+    "statistic": 15.02991767,
+    "df": 648,
+    "p": 5.06774567e-44,
+    "ci": [11.65699258, 12.15502591],
+    "estimate": 11.90600924
+  },
+  "t_paired": {
+    "statistic": 7.09286667,
+    "df": 648,
+    "p": 3.4505234e-12,
+    "ci": [0.36659117, 0.64727631],
+    "estimate": 0.50693374
+  },
+  "t_sex": {
+    "statistic": 3.27470739,
+    "df": 547.43944386,
+    "p": 0.00112457,
+    "ci": [0.33903339, 1.35546395],
+    "estimate": [12.25326371, 11.40601504]
+  },
+  "t_higher": {
+    "statistic": -9.1593403,
+    "df": 86.03588719,
+    "p": 2.32305383e-14,
+    "ci": [-4.23378291, -2.72373833],
+    "estimate": [8.79710145, 12.27586207]
+  },
+  "t_school": {
+    "statistic": 6.75449154,
+    "df": 340.48678258,
+    "p": 6.21183941e-11,
+    "ci": [1.36541138, 2.48736797],
+    "estimate": [12.57683215, 10.65044248]
+  },
+  "chi_higher": {
+    "statistic": 62.25138549,
+    "df": 1,
+    "p": 3.02296196e-15,
+    "observed": [
+      [33, 36],
+      [67, 513]
+    ]
+  },
+  "chi_school": {
+    "statistic": 57.33136581,
+    "df": 1,
+    "p": 3.68235636e-14,
+    "observed": [
+      [32, 391],
+      [68, 158]
+    ]
+  },
+  "chi_sex": {
+    "statistic": 3.97103463,
+    "df": 1,
+    "p": 0.04628932,
+    "observed": [
+      [50, 333],
+      [50, 216]
+    ]
+  },
+  "chi_higher_min_expected": 10.63174114,
+  "anova_study": {
+    "F": 15.87626799,
+    "df1": 3,
+    "df2": 645,
+    "p": 5.70572846e-10,
+    "ss_between": 465.07782464,
+    "ss_within": 6298.18873931
+  },
+  "anova_fail": {
+    "F": 76.89783541,
+    "df1": 2,
+    "df2": 646,
+    "p": 1.10374939e-30,
+    "ss_between": 1300.53356889,
+    "ss_within": 5462.73299506
+  },
+  "anova_medu": {
+    "F": 10.76427687,
+    "df1": 4,
+    "df2": 644,
+    "p": 1.88568519e-08,
+    "ss_between": 423.84641991,
+    "ss_within": 6339.42014403
+  },
+  "tukey_study": [
+    {
+      "pair": "2-5 h-<2 h",
+      "diff": 1.24746366,
+      "lwr": 0.5277536,
+      "upr": 1.96717371,
+      "p adj": 0.0000559,
+      "_row": "2-5 h-<2 h"
+    },
+    {
+      "pair": "5-10 h-<2 h",
+      "diff": 2.3824645,
+      "lwr": 1.39583161,
+      "upr": 3.36909739,
+      "p adj": 5.07133247e-09,
+      "_row": "5-10 h-<2 h"
+    },
+    {
+      "pair": ">10 h-<2 h",
+      "diff": 2.21280323,
+      "lwr": 0.74429403,
+      "upr": 3.68131244,
+      "p adj": 0.0006612,
+      "_row": ">10 h-<2 h"
+    },
+    {
+      "pair": "5-10 h-2-5 h",
+      "diff": 1.13500085,
+      "lwr": 0.19677501,
+      "upr": 2.07322668,
+      "p adj": 0.01031067,
+      "_row": "5-10 h-2-5 h"
+    },
+    {
+      "pair": ">10 h-2-5 h",
+      "diff": 0.96533958,
+      "lwr": -0.47109438,
+      "upr": 2.40177354,
+      "p adj": 0.30838854,
+      "_row": ">10 h-2-5 h"
+    },
+    {
+      "pair": ">10 h-5-10 h",
+      "diff": -0.16966127,
+      "lwr": -1.75673544,
+      "upr": 1.41741291,
+      "p adj": 0.99270364,
+      "_row": ">10 h-5-10 h"
+    }
+  ],
+  "tukey_fail": [
+    {
+      "pair": "1-0",
+      "diff": -3.86716107,
+      "lwr": -4.7341327,
+      "upr": -3.00018945,
+      "p adj": 0,
+      "_row": "1-0"
+    },
+    {
+      "pair": "2+-0",
+      "diff": -4.04335155,
+      "lwr": -5.32416899,
+      "upr": -2.76253411,
+      "p adj": 0,
+      "_row": "2+-0"
+    },
+    {
+      "pair": "2+-1",
+      "diff": -0.17619048,
+      "lwr": -1.66687281,
+      "upr": 1.31449185,
+      "p adj": 0.95839712,
+      "_row": "2+-1"
+    }
+  ],
+  "lm_simple": {
+    "coef": [
+      {
+        "term": "(Intercept)",
+        "estimate": 0.12196613,
+        "se": 0.20559337,
+        "t": 0.59323959,
+        "p": 0.55322813
+      },
+      {
+        "term": "G2",
+        "estimate": 1.01849034,
+        "se": 0.01723218,
+        "t": 59.10398943,
+        "p": 5.64240149e-263
+      }
+    ],
+    "r2": 0.84373043,
+    "adj_r2": 0.84348891,
+    "sigma": 1.27809552
+  },
+  "lm_multi": {
+    "coef": [
+      {
+        "term": "(Intercept)",
+        "estimate": 10.43517308,
+        "se": 0.57395623,
+        "t": 18.18113044,
+        "p": 7.86797945e-60
+      },
+      {
+        "term": "failures",
+        "estimate": -1.40447084,
+        "se": 0.19102473,
+        "t": -7.35229865,
+        "p": 5.99817099e-13
+      },
+      {
+        "term": "higheryes",
+        "estimate": 1.73633588,
+        "se": 0.37341745,
+        "t": 4.64985196,
+        "p": 4.03904753e-06
+      },
+      {
+        "term": "studytime",
+        "estimate": 0.44328633,
+        "se": 0.13513945,
+        "t": 3.28021401,
+        "p": 0.00109375
+      },
+      {
+        "term": "schoolMousinho da Silveira",
+        "estimate": -1.42201154,
+        "se": 0.24427222,
+        "t": -5.82142147,
+        "p": 9.24532936e-09
+      },
+      {
+        "term": "absences",
+        "estimate": -0.03467922,
+        "se": 0.02405526,
+        "t": -1.44164807,
+        "p": 0.14989233
+      },
+      {
+        "term": "Dalc",
+        "estimate": -0.34923613,
+        "se": 0.12229335,
+        "t": -2.85572469,
+        "p": 0.00443351
+      },
+      {
+        "term": "sexMale",
+        "estimate": -0.61206992,
+        "se": 0.23310879,
+        "t": -2.62568357,
+        "p": 0.00885488
+      },
+      {
+        "term": "Medu",
+        "estimate": 0.25860851,
+        "se": 0.10162797,
+        "t": 2.5446588,
+        "p": 0.01117291
+      },
+      {
+        "term": "schoolsupyes",
+        "estimate": -1.3676263,
+        "se": 0.35300642,
+        "t": -3.87422505,
+        "p": 0.00011801
+      },
+      {
+        "term": "internetyes",
+        "estimate": 0.34599797,
+        "se": 0.26465751,
+        "t": 1.30734234,
+        "p": 0.19156741
+      }
+    ],
+    "r2": 0.31887598,
+    "adj_r2": 0.30820006,
+    "sigma": 2.68708256,
+    "F": 29.86869811,
+    "p_overall": 2.97726542e-47
+  },
+  "logit": {
+    "coef": [
+      {
+        "term": "(Intercept)",
+        "estimate": 2.08889473,
+        "se": 0.58240286,
+        "t": 3.58668348,
+        "p": 0.00033491
+      },
+      {
+        "term": "failures",
+        "estimate": -1.00996412,
+        "se": 0.17801863,
+        "t": -5.67336192,
+        "p": 1.40021967e-08
+      },
+      {
+        "term": "higheryes",
+        "estimate": 1.14078014,
+        "se": 0.32798852,
+        "t": 3.47810999,
+        "p": 0.00050496
+      },
+      {
+        "term": "studytime",
+        "estimate": 0.24999256,
+        "se": 0.17462617,
+        "t": 1.43158705,
+        "p": 0.15226204
+      },
+      {
+        "term": "schoolMousinho da Silveira",
+        "estimate": -1.84059021,
+        "se": 0.29098147,
+        "t": -6.32545501,
+        "p": 2.52487471e-10
+      },
+      {
+        "term": "absences",
+        "estimate": -0.05905449,
+        "se": 0.02695374,
+        "t": -2.1909572,
+        "p": 0.02845489
+      },
+      {
+        "term": "Dalc",
+        "estimate": -0.06907344,
+        "se": 0.13410142,
+        "t": -0.5150836,
+        "p": 0.6064946
+      },
+      {
+        "term": "sexMale",
+        "estimate": -0.3858538,
+        "se": 0.28372328,
+        "t": -1.35996524,
+        "p": 0.17384092
+      },
+      {
+        "term": "Medu",
+        "estimate": 0.00783502,
+        "se": 0.12116351,
+        "t": 0.06466481,
+        "p": 0.94844089
+      }
+    ],
+    "accuracy": 0.86132512,
+    "confusion": [
+      [28, 18],
+      [72, 531]
+    ],
+    "aic": 429.75098603,
+    "lr_chi": 146.03455428,
+    "lr_df": 8,
+    "lr_p": 1.31548957e-27
+  }
+}
