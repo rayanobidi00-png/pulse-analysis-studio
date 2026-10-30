@@ -21,7 +21,7 @@ export default {
         code: 'var(--code-bg)',
       },
       fontFamily: {
-        display: ['"Bricolage Grotesque"', '"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
+        display: ['"Bricolage Grotesque Variable"', '"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
         body: ['"IBM Plex Sans"', '"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
         ar: ['"IBM Plex Sans Arabic"', 'Tahoma', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'Menlo', 'Consolas', 'monospace'],

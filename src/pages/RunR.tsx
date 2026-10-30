@@ -26,7 +26,7 @@ export default function RunR() {
   const start = async () => {
     setError(null);
     try {
-      const w = await startWebR((m) => setStatus(m as Status), csvText);
+      const w = await startWebR((m) => setStatus(m as Status), csvText());
       const miss: string[] = [];
       for (const p of ['modeest', 'corrplot']) if (!(await hasPackage(w, p))) miss.push(p);
       setMissing(miss);

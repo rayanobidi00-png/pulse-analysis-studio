@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { LangProvider } from './i18n/lang';
 import { AnalysisProvider } from './state/analysis';
@@ -12,7 +12,6 @@ const Test = lazy(() => import('./pages/Test'));
 const Model = lazy(() => import('./pages/Model'));
 const Visualize = lazy(() => import('./pages/Visualize'));
 const Predict = lazy(() => import('./pages/Predict'));
-const Sql = lazy(() => import('./pages/Sql'));
 const RunR = lazy(() => import('./pages/RunR'));
 const Report = lazy(() => import('./pages/Report'));
 const About = lazy(() => import('./pages/About'));
@@ -44,7 +43,7 @@ export function App() {
                 <Route path="/model" element={<Model />} />
                 <Route path="/visualize" element={<Visualize />} />
                 <Route path="/predict" element={<Predict />} />
-                <Route path="/sql" element={<Sql />} />
+                <Route path="/sql" element={<Navigate to="/data" replace />} />
                 <Route path="/r" element={<RunR />} />
                 <Route path="/report" element={<Report />} />
                 <Route path="/about" element={<About />} />

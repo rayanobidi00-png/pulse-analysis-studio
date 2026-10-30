@@ -93,7 +93,7 @@ export default function About() {
 
       <Section title={L('Built with', 'أُنجز باستخدام')}>
         <p className="text-sm text-muted">
-          {L('R (dplyr, ggplot2, modeest, corrplot) · webR · React · TypeScript · SQLite (sql.js) · jStat · D3 · Tailwind CSS · Vite · Vitest · GitHub Pages.', 'R (dplyr وggplot2 وmodeest وcorrplot) · webR · React · TypeScript · SQLite (sql.js) · jStat · D3 · Tailwind CSS · Vite · Vitest · GitHub Pages.')}
+          {L('R (dplyr, ggplot2, modeest, corrplot) · webR · React · TypeScript · Supabase (Postgres) · jStat · D3 · Tailwind CSS · Vite · Vitest · GitHub Pages / Cloudflare Pages.', 'R (dplyr وggplot2 وmodeest وcorrplot) · webR · React · TypeScript · Supabase (Postgres) · jStat · D3 · Tailwind CSS · Vite · Vitest · GitHub Pages / Cloudflare Pages.')}
         </p>
       </Section>
     </div>

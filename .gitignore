@@ -4,3 +4,9 @@ dist
 .DS_Store
 lighthouse-*
 tsconfig.tsbuildinfo
+
+# secrets
+.env
+.env.local
+.env.*.local
+.env.supabase

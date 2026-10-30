@@ -25,7 +25,7 @@ A persistent left "pipeline rail" shows the eight stages with a status dot (done
 - The research question and four sub-questions; a "Start the analysis" button into `#/data`.
 
 ### 1. Data (`#/data`)
-- "Import" animation: the raw CSV text streams in, then becomes a table (sql.js `CREATE TABLE students_raw` + inserts). Show the SQL and the R `read.csv(sep = ";")` side by side.
+- "Import" animation: the raw CSV text streams in, then becomes a table (parsed into 649 typed rows; the Postgres schema is shown). Show the schema and the R `read.csv(sep = ";")` side by side.
 - Shape card (rows, columns), source and domain card with citation.
 - Column dictionary: all 33 columns with meaning, R class (character/integer), statistical type (17 nominal, 10 ordinal, 6 numeric), distinct values, a mini distribution sparkline per column.
 - Data explorer: paginated, sortable, filterable table of all rows, backed by SQL queries.
@@ -72,7 +72,7 @@ The early-warning tool: form for the 10 predictors, predicted G3 on a 0–20 rul
 One-click generated report of the whole analysis (all stages, all tables, all charts, all interpretations) as a printable page with "Download PDF" (client-side, e.g. browser print styles + `html2pdf`-style export) and "Download Markdown".
 
 ### SQL console (`#/sql`)
-A live SQLite console over `students_raw` and `students_clean` with 10 preset queries (pass rate by school, mean G3 by study time, top absentees, etc.), results table and a quick chart.
+Replaced (2026-10-30) by Ask PULSE and the Data explorer; data is served from Supabase (see DECISIONS.md).
 
 ### Run it in R (`#/r`)
 WebR loads on demand, installs dplyr, ggplot2 (and modeest, corrplot if available in the webR repo; otherwise show the base-R equivalent and log it in DECISIONS.md), mounts the CSV, and runs `data/pulse_analysis.R` section by section with console output and plots. A side panel compares R's numbers to the TypeScript engine's numbers, row by row, with a green check when they match.
@@ -103,5 +103,5 @@ All of these and more are in `data/results.json`.
 ## Quality bar
 - Lighthouse ≥ 90 for performance, accessibility and best practices on the home page.
 - No layout shift on load; WebR and heavy pages lazy-loaded.
-- Works offline after first load (the CSV and the sql.js WASM are bundled).
+- Works offline after first load (the CSV is bundled).
 - Every chart has a title stating its finding, labelled axes with units, and an accessible text alternative.

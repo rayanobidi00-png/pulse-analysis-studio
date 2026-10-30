@@ -13,7 +13,7 @@ export type Bi = { en: string; ar: string };
 export type Intent =
   | 'help' | 'clean' | 'missing' | 'duplicates' | 'outliers' | 'describe' | 'histogram' | 'boxplot' | 'bar' | 'pie'
   | 'scatter' | 'correlation' | 'compare' | 'onesample' | 'paired' | 'regression' | 'passrate' | 'count' | 'mean'
-  | 'top' | 'sql';
+  | 'top';
 
 export interface Filter { col: ColumnName | 'pass'; value: string }
 
@@ -24,7 +24,6 @@ export interface Parsed {
   number?: number;
   limit?: number;
   order?: 'desc' | 'asc';
-  sql?: string;
 }
 
 export type ChartSpec =
@@ -182,7 +181,6 @@ function findFilters(text: string): Filter[] {
 
 export function parseRequest(input: string): Parsed {
   const raw = input.trim();
-  if (/^\s*(select|with)\s/i.test(raw)) return { intent: 'sql', vars: [], filters: [], sql: raw };
   const t = normalise(raw);
   let vars = findVars(t);
   // "higher than 10" is a comparison word, not the higher-education column.
@@ -315,8 +313,8 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         ...base,
         title: bi('What I can do', 'شو بقدر أعمل'),
         summary: bi(
-          'Ask me in English or Arabic. I can clean and check the data, describe any column, draw histograms, box plots, bar, pie and scatter charts, run t-tests, chi-square, ANOVA, correlation and regression, count and average with filters (girls, boys, GP, MS, passed, failed), and run SQL that starts with SELECT.',
-          'اسألني بالعربي أو بالإنجليزي. بقدر أنظّف البيانات وأفحصها، أوصف أي عمود، أرسم هيستوغرام وبوكس بلوت وأعمدة ودائري وانتشار، أعمل اختبار t وكاي تربيع وANOVA وارتباط وانحدار، أحسب عدد ومتوسط مع شروط (بنات، شباب، GP، MS، ناجحين، راسبين)، وأشغّل SQL بيبلش بـ SELECT.',
+          'Ask me in English or Arabic. I can clean and check the data, describe any column, draw histograms, box plots, bar, pie and scatter charts, run t-tests, chi-square, ANOVA, correlation and regression, count and average with filters (girls, boys, GP, MS, passed, failed).',
+          'اسألني بالعربي أو بالإنجليزي. بقدر أنظّف البيانات وأفحصها، أوصف أي عمود، أرسم هيستوغرام وبوكس بلوت وأعمدة ودائري وانتشار، أعمل اختبار t وكاي تربيع وANOVA وارتباط وانحدار، أحسب عدد ومتوسط مع شروط (بنات، شباب، GP، MS، ناجحين، راسبين).',
         ),
       };
 
@@ -699,7 +697,5 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       };
     }
 
-    case 'sql':
-      return { ...base, title: bi('SQL query', 'استعلام SQL'), summary: bi('Running on the in-browser SQLite table students_raw.', 'بيشتغل على جدول students_raw بقاعدة SQLite داخل المتصفح.') };
   }
 }

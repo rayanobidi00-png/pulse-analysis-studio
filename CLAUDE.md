@@ -18,7 +18,7 @@ Read these first, in order: `docs/SPEC.md` (what to build), `docs/PHASES.md` (th
 
 ## Stack (decided; do not swap without a strong reason logged in DECISIONS.md)
 - Vite + React 18 + TypeScript (strict), Tailwind CSS, React Router (hash routing so GitHub Pages works).
-- Data layer: **SQLite in the browser** with `sql.js` (WASM). The CSV is loaded into a `students_raw` table; cleaning steps create `students_clean`; the UI has a live SQL console.
+- Data layer (like Faisal Garage): **Supabase** (Postgres + Row Level Security) read with `@supabase/supabase-js` when `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are set; otherwise the bundled CSV. Schema in `supabase/migrations/`, load with `npm run db:push`. No SQLite. The cleaning pipeline runs in TypeScript (`src/data/clean.ts`) and builds `students_clean` (43 columns).
 - Statistics: own TypeScript module `src/stats/` (t-tests, chi-square, ANOVA, Tukey, OLS, logistic IRLS, correlation, quantiles) using `jstat` only for distribution functions (t, F, chi-square, normal, studentized range).
 - Real R in the browser: **WebR** (`webr` npm package) on the "Run it in R" page, executing `data/pulse_analysis.R` section by section and showing console output and plots. Lazy-load it; the rest of the site must not wait for it.
 - Charts: D3 (scales, shapes) rendered as React SVG components, so every chart is custom, themeable and exportable.
@@ -26,7 +26,7 @@ Read these first, in order: `docs/SPEC.md` (what to build), `docs/PHASES.md` (th
 
 ## Design rules
 - Follow the visual identity in `reference/`: navy `#0B1222`/`#131B2E`, paper `#F3F5F9`, teal `#0F9D8A` (dark mode `#2EC4AE`), coral `#E0533E`/`#FF6B55` for fail/negative, amber `#DE9726`, violet `#6656DB`, sky `#2F7FD0`.
-- Fonts from Google Fonts: Bricolage Grotesque (headings), IBM Plex Sans (text), IBM Plex Sans Arabic (Arabic, `dir="rtl"`), JetBrains Mono (code, numbers in tables).
+- Fonts self-hosted with @fontsource (no CDN): Bricolage Grotesque (headings), IBM Plex Sans (text), IBM Plex Sans Arabic (Arabic, `dir="rtl"`), JetBrains Mono (code, numbers in tables).
 - Full English/Arabic language toggle (all UI text and every interpretation), light/dark theme, responsive to 375 px, keyboard accessible, `prefers-reduced-motion` respected, colour never the only signal.
 - Calm, editorial, premium. One memorable motion moment (the 649-dot hero), no gimmicks.
 

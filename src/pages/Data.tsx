@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { SqlValue } from 'sql.js';
 import { Sparkline } from '../components/charts/Charts';
 import { CodeTabs, Interp, Kpi, KpiStrip, NextStep, PageHeader, Section, Select } from '../components/ui';
 import { COLUMNS, kindLabel, rClass } from '../content/columns';
 import { rBetween } from '../content/rcode';
-import { createRawTableSql, runQuery } from '../data/db';
+import { dataset } from '../data/backend';
+import { COLUMN_NAMES } from '../data/parse';
 import { useLang } from '../i18n/lang';
 import { useAnalysis, csvText } from '../state/analysis';
-import { useDb } from '../state/useDb';
 import parseSrc from '../data/parse.ts?raw';
 import { extractFn } from '../lib/source';
+import schemaSql from '../../supabase/migrations/20261030000000_pulse_schema.sql?raw';
+
+const POSTGRES_TABLE = schemaSql.slice(schemaSql.indexOf('create table if not exists public.students'), schemaSql.indexOf(');', schemaSql.indexOf('public.students (')) + 2);
 
 function ImportAnimation({ ready, onDone }: { ready: boolean; onDone: () => void }) {
   const { L } = useLang();
-  const lines = useMemo(() => csvText.split('\n').slice(0, 14), []);
+  const lines = useMemo(() => csvText().split('\n').slice(0, 14), []);
   const [shown, setShown] = useState(0);
   const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   useEffect(() => {
@@ -32,7 +34,7 @@ function ImportAnimation({ ready, onDone }: { ready: boolean; onDone: () => void
     <div className="overflow-hidden rounded-xl border border-line" dir="ltr">
       <div className="flex items-center justify-between bg-code px-4 py-2 text-xs text-[#9aa6bf]">
         <span className="mono">student-por.csv</span>
-        <span className="mono">{finished ? L('loaded into students_raw ✓', 'حُمِّلت إلى students_raw ✓') : L('streaming…', 'جارٍ التحميل…')}</span>
+        <span className="mono">{finished ? L('parsed into 649 typed rows ✓', 'تحوّلت إلى 649 صف ✓') : L('streaming…', 'جارٍ التحميل…')}</span>
       </div>
       <pre className={`mono h-64 overflow-hidden bg-[#1a2338] p-4 text-[11.5px] leading-relaxed text-[#d7dff0] ${finished ? '' : 'caret'}`}>
         {lines.slice(0, shown).join('\n')}
@@ -41,28 +43,46 @@ function ImportAnimation({ ready, onDone }: { ready: boolean; onDone: () => void
   );
 }
 
-type SortDir = 'ASC' | 'DESC';
+type SortDir = 'asc' | 'desc';
+
+/** The same query, written the way the site sends it to Supabase. */
+function supabaseQuery(f: { school: string; sex: string; minG3: number }, sort: { col: string; dir: SortDir }, from: number, to: number): string {
+  return [
+    "supabase.from('students').select('*', { count: 'exact' })",
+    f.school !== 'all' ? `  .eq('school', '${f.school}')` : '',
+    f.sex !== 'all' ? `  .eq('sex', '${f.sex}')` : '',
+    f.minG3 > 0 ? `  .gte('G3', ${f.minG3})` : '',
+    `  .order('${sort.col}', { ascending: ${sort.dir === 'asc'} })`,
+    `  .range(${from}, ${to})`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
 
 function Explorer() {
   const { L } = useLang();
-  const { db, error } = useDb();
+  const A = useAnalysis();
+  const ds = dataset();
   const [page, setPage] = useState(0);
-  const [sort, setSort] = useState<{ col: string; dir: SortDir }>({ col: 'G3', dir: 'DESC' });
+  const [sort, setSort] = useState<{ col: string; dir: SortDir }>({ col: 'G3', dir: 'desc' });
   const [school, setSchool] = useState<'all' | 'GP' | 'MS'>('all');
   const [sex, setSex] = useState<'all' | 'F' | 'M'>('all');
   const [minG3, setMinG3] = useState(0);
   const size = 12;
-  const where = [
-    school !== 'all' ? `school = '${school}'` : '',
-    sex !== 'all' ? `sex = '${sex}'` : '',
-    minG3 > 0 ? `G3 >= ${minG3}` : '',
-  ].filter(Boolean);
-  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
-  const sql = `SELECT * FROM students_raw ${whereSql}\nORDER BY "${sort.col}" ${sort.dir}\nLIMIT ${size} OFFSET ${page * size};`;
-  const result = useMemo(() => (db ? runQuery(db, sql) : null), [db, sql]);
-  const total = useMemo(() => (db ? Number(runQuery(db, `SELECT COUNT(*) FROM students_raw ${whereSql}`).values[0][0]) : 0), [db, whereSql]);
+  const matching = useMemo(() => {
+    const rows = A.raw.filter((r) => (school === 'all' || r.school === school) && (sex === 'all' || r.sex === sex) && r.G3 >= minG3);
+    const k = sort.col as keyof (typeof rows)[number];
+    const sign = sort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const x = a[k];
+      const y = b[k];
+      return sign * (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y)));
+    });
+  }, [A.raw, school, sex, minG3, sort]);
+  const total = matching.length;
   const pages = Math.max(1, Math.ceil(total / size));
-  if (error) return <p className="text-coral">{L('Could not start SQLite: ', 'تعذّر تشغيل SQLite: ')}{error}</p>;
+  const rows = matching.slice(page * size, page * size + size);
+  const query = supabaseQuery({ school, sex, minG3 }, sort, page * size, page * size + size - 1);
   return (
     <div className="card">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -72,34 +92,31 @@ function Explorer() {
           options={[{ value: 'all', label: L('All', 'الكل') }, { value: 'F', label: 'F' }, { value: 'M', label: 'M' }]} />
         <Select label={L('Minimum G3', 'أدنى قيمة لـ G3')} value={String(minG3)} onChange={(v) => { setMinG3(Number(v)); setPage(0); }}
           options={[0, 5, 10, 15].map((v) => ({ value: String(v), label: String(v) }))} />
-        <div className="flex flex-col justify-end text-sm text-muted">
-          <span className="mono num">{L(`${total} matching rows`, `${total} صفًا مطابقًا`)}</span>
+        <div className="flex flex-col justify-end gap-1 text-sm text-muted">
+          <span className="mono num font-semibold text-ink">{L(`${total} matching rows`, `${total} صفًا مطابقًا`)}</span>
+          <span className="text-xs">{ds.source === 'supabase' ? L('rows loaded from Supabase', 'الصفوف محمّلة من Supabase') : L('rows from the bundled CSV', 'الصفوف من ملف CSV المرفق')}</span>
         </div>
       </div>
-      <pre className="mono mt-4 overflow-x-auto rounded-lg bg-soft p-3 text-xs text-muted" dir="ltr">{sql}</pre>
-      <div className="mt-4 overflow-x-auto" dir="ltr">
-        {!result ? (
-          <div className="h-72 animate-pulse rounded-lg bg-soft" />
-        ) : (
-          <table className="tbl mono text-xs">
-            <thead>
-              <tr>
-                {result.columns.map((c) => (
-                  <th key={c} aria-sort={sort.col === c ? (sort.dir === 'ASC' ? 'ascending' : 'descending') : 'none'}>
-                    <button type="button" className="hover:text-ink" onClick={() => setSort((s) => ({ col: c, dir: s.col === c && s.dir === 'DESC' ? 'ASC' : 'DESC' }))}>
-                      {c}{sort.col === c ? (sort.dir === 'ASC' ? ' ▲' : ' ▼') : ''}
-                    </button>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {result.values.map((r: SqlValue[], i) => (
-                <tr key={i}>{r.map((v, j) => <td key={j} className="whitespace-nowrap">{String(v)}</td>)}</tr>
+      <pre className="mono mt-4 overflow-x-auto rounded-xl bg-[var(--navy)] p-4 text-xs leading-relaxed text-[#bfe9e1]" dir="ltr">{query}</pre>
+      <div className="mt-4 overflow-x-auto rounded-xl border border-line" dir="ltr">
+        <table className="tbl mono text-xs">
+          <thead>
+            <tr>
+              {COLUMN_NAMES.map((c) => (
+                <th key={c} aria-sort={sort.col === c ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" className="hover:text-ink" onClick={() => { setSort((s) => ({ col: c, dir: s.col === c && s.dir === 'desc' ? 'asc' : 'desc' })); setPage(0); }}>
+                    {c}{sort.col === c ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}
+                  </button>
+                </th>
               ))}
-            </tbody>
-          </table>
-        )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>{COLUMN_NAMES.map((c) => <td key={c} className={`whitespace-nowrap ${c === 'G3' ? (r.G3 >= 10 ? 'font-semibold text-teal' : 'font-semibold text-coral') : ''}`}>{String(r[c])}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <button type="button" className="btn-ghost" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>{L('Previous', 'السابق')}</button>
@@ -113,7 +130,6 @@ function Explorer() {
 export default function Data() {
   const A = useAnalysis();
   const { L, lang } = useLang();
-  const { db } = useDb();
   const [imported, setImported] = useState(false);
   const counts = { nominal: 0, ordinal: 0, numeric: 0 };
   COLUMNS.forEach((c) => counts[c.kind]++);
@@ -130,18 +146,18 @@ export default function Data() {
         eyebrow={L('Import and inspect', 'الاستيراد والفحص')}
         title={L(`The data: ${A.n_rows} students, ${A.n_cols} columns`, `البيانات: ${A.n_rows} طالبًا و${A.n_cols} عمودًا`)}
         lead={L(
-          'We read the semicolon-separated CSV exactly as read.csv() does, load it into an in-browser SQLite table, and look at every column before touching anything.',
-          'نقرأ ملف CSV المفصول بفواصل منقوطة تمامًا كما تفعل read.csv()، ونحمّله في جدول SQLite داخل المتصفح، ونفحص كل عمود قبل أي تعديل.',
+          'We read the semicolon-separated CSV exactly as read.csv() does, load the 649 rows (from our Supabase Postgres table, or the bundled file when offline), and look at every column before touching anything.',
+          'نقرأ ملف CSV المفصول بفواصل منقوطة تمامًا كما تفعل read.csv()، ونحمّل الـ 649 صف (من جدول Postgres على Supabase، أو من الملف المرفق بدون إنترنت)، ونفحص كل عمود قبل أي تعديل.',
         )}
       />
 
       <Section title={L('Import', 'الاستيراد')} lead={L('The raw text streams in, then becomes a table.', 'يتدفق النص الخام، ثم يتحول إلى جدول.')}>
         <div className="grid gap-5 lg:grid-cols-2">
-          <ImportAnimation ready={!!db} onDone={() => setImported(true)} />
+          <ImportAnimation ready onDone={() => setImported(true)} />
           <CodeTabs
             tabs={[
               { label: 'R', lang: 'r', code: rBetween('df <- read.csv', 'cat("\\n===== 1.') + '\n\nnrow(df); ncol(df)\nstr(df)' },
-              { label: 'SQL', lang: 'sql', code: `${createRawTableSql()}\n\nINSERT INTO students_raw VALUES (?, ?, ...);  -- ${A.n_rows} rows` },
+              { label: 'Postgres', lang: 'sql', code: POSTGRES_TABLE },
               { label: 'TypeScript', lang: 'ts', code: extractFn(parseSrc, 'parseCsv') },
             ]}
           />
@@ -226,7 +242,7 @@ export default function Data() {
         </div>
       </Section>
 
-      <Section title={L('Data explorer', 'مستكشف البيانات')} lead={L('Every row of students_raw, queried live with SQL. Click a column to sort.', 'جميع صفوف students_raw، مستعلمة مباشرة بلغة SQL. انقر على عمود للترتيب.')}>
+      <Section title={L('Data explorer', 'مستكشف البيانات')} lead={L('Every one of the 649 rows. Filter, sort and page; the box shows the same query written for Supabase.', 'كل الـ 649 صف. فلتر ورتّب وتنقّل؛ والمربع بيعرض نفس الاستعلام مكتوب لـ Supabase.')}>
         <Explorer />
       </Section>
 

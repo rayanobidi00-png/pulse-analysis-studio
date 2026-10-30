@@ -19,7 +19,6 @@ export const STAGES: Stage[] = [
 
 export const TOOLS: Stage[] = [
   { path: '/ask', en: 'Ask PULSE', ar: 'اسأل PULSE' },
-  { path: '/sql', en: 'SQL console', ar: 'وحدة SQL' },
   { path: '/r', en: 'Run it in R', ar: 'شغّله في R' },
   { path: '/about', en: 'About', ar: 'عن المشروع' },
 ];

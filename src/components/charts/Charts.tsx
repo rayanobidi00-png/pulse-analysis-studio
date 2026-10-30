@@ -138,8 +138,8 @@ export function HBarSvg({
             <rect x={x0} y={yy} width={Math.max(1, w)} height={y.bandwidth()} rx={3} fill={b.color ?? PALETTE[i % PALETTE.length]}>
               <title>{`${b.label}: ${valueFormat(b.value)}${b.note ? ` ${b.note}` : ''}`}</title>
             </rect>
-            <text x={b.value >= 0 ? x(b.value) + 6 : x(b.value) - 6} y={yy + y.bandwidth() / 2} dy="0.32em"
-              textAnchor={b.value >= 0 ? 'start' : 'end'} className="mono" style={{ fontSize: 11, fill: 'var(--ink)' }}>
+            <text x={b.value >= 0 ? x(b.value) + 6 : x(0) + 6} y={yy + y.bandwidth() / 2} dy="0.32em"
+              textAnchor="start" className="mono" style={{ fontSize: 11, fill: 'var(--ink)' }}>
               {valueFormat(b.value)}{b.note ? ` ${b.note}` : ''}
             </text>
           </g>

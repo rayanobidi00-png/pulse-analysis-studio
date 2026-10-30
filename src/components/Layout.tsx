@@ -1,8 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { STAGES, TOOLS } from '../content/stages';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { STAGES } from '../content/stages';
+import { dataset } from '../data/backend';
 import { useLang } from '../i18n/lang';
 import { useTheme } from '../state/theme';
+import { Icon, type IconName } from './Icon';
 
 const VISITED_KEY = 'pulse-visited';
 
@@ -21,7 +23,7 @@ function useVisited(path: string): Set<string> {
       try {
         localStorage.setItem(VISITED_KEY, JSON.stringify([...next]));
       } catch {
-        /* ignore */
+        /* storage unavailable: progress is kept for this visit only */
       }
       return next;
     });
@@ -32,135 +34,313 @@ function useVisited(path: string): Set<string> {
 export function Logo({ size = 30 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden>
-      <rect width="64" height="64" rx="15" fill="var(--teal)" />
-      <path d="M10 34h11l5-12 8 22 6-14 3 4h11" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      <defs>
+        <linearGradient id="pulse-logo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#2EC4AE" />
+          <stop offset="1" stopColor="#0F9D8A" />
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="16" fill="url(#pulse-logo)" />
+      <path
+        d="M10 34h11l5-12 8 22 6-14 3 4h11"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-const TOOL_ICONS: Record<string, ReactNode> = {
-  '/ask': (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M4 5h16v11H9l-5 4z" strokeLinejoin="round" />
-      <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" strokeLinecap="round" strokeWidth="2.4" />
-    </svg>
-  ),
-  '/sql': (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <ellipse cx="12" cy="5.5" rx="7" ry="2.5" />
-      <path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
-    </svg>
-  ),
-  '/r': (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12" />
-    </svg>
-  ),
-  '/about': (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v6M12 7.5v.5" strokeLinecap="round" />
-    </svg>
-  ),
+const STAGE_ICONS: Record<string, IconName> = {
+  '/data': 'table',
+  '/clean': 'sparkle',
+  '/describe': 'sigma',
+  '/test': 'flask',
+  '/model': 'trend',
+  '/visualize': 'chart',
+  '/predict': 'target',
+  '/report': 'doc',
 };
 
-function Rail({ visited, onNavigate }: { visited: Set<string>; onNavigate?: () => void }) {
+function SideLink({
+  to,
+  icon,
+  children,
+  end,
+  badge,
+  onNavigate,
+}: {
+  to: string;
+  icon: IconName;
+  children: ReactNode;
+  end?: boolean;
+  badge?: ReactNode;
+  onNavigate?: () => void;
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onNavigate}
+      className={({ isActive }) => `side-link ${isActive ? 'side-link-active' : ''}`}
+    >
+      <Icon name={icon} className="h-[18px] w-[18px] shrink-0" />
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {badge}
+    </NavLink>
+  );
+}
+
+function Sidebar({ visited, onNavigate }: { visited: Set<string>; onNavigate?: () => void }) {
   const { L } = useLang();
   const { pathname } = useLocation();
-  const idx = STAGES.findIndex((s) => s.path === pathname);
-  const doneCount = STAGES.filter((s) => visited.has(s.path)).length;
+  const done = STAGES.filter((s) => visited.has(s.path)).length;
+  const ds = dataset();
   return (
-    <nav aria-label={L('Analysis pipeline', 'مراحل التحليل')} className="flex flex-col gap-5">
-      <div className="rail-card">
-        <div className="flex items-baseline justify-between px-1">
-          <p className="eyebrow">{L('Analysis pipeline', 'مسار التحليل')}</p>
-          <span className="mono text-[11px] text-muted ltr">{doneCount}/{STAGES.length}</span>
+    <div className="flex h-full flex-col">
+      <Link to="/" onClick={onNavigate} className="flex items-center gap-3 px-5 pb-6 pt-5">
+        <Logo size={36} />
+        <span className="leading-none">
+          <span className="block font-display text-[19px] font-extrabold tracking-tight text-white">
+            PULSE
+          </span>
+          <span className="mt-1 block text-[11.5px] font-medium text-[#8d99b3]">
+            {L('Analysis Studio', 'استوديو التحليل')}
+          </span>
+        </span>
+      </Link>
+
+      <nav aria-label={L('Main', 'الرئيسية')} className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
+        <div className="space-y-1">
+          <SideLink to="/" end icon="grid" onNavigate={onNavigate}>
+            {L('Dashboard', 'لوحة التحكم')}
+          </SideLink>
+          <SideLink
+            to="/ask"
+            icon="spark"
+            onNavigate={onNavigate}
+            badge={
+              <span className="rounded-md bg-[#2ec4ae] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#05201b]">
+                AI
+              </span>
+            }
+          >
+            {L('Ask PULSE', 'اسأل PULSE')}
+          </SideLink>
         </div>
-        <div className="mx-1 mt-3 h-1.5 overflow-hidden rounded-full bg-soft" aria-hidden>
-          <div className="h-full rounded-full bg-teal transition-all duration-500" style={{ width: `${(doneCount / STAGES.length) * 100}%` }} />
-        </div>
-        <ol className="relative mt-4">
-          <span aria-hidden className="absolute bottom-5 top-5 w-px bg-line ltr:left-[23px] rtl:right-[23px]" />
-          {STAGES.map((s, i) => {
-            const current = pathname === s.path;
-            const done = !current && visited.has(s.path);
-            const past = idx >= 0 && i < idx;
-            return (
-              <li key={s.path}>
-                <NavLink
-                  to={s.path}
-                  onClick={onNavigate}
-                  className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition-all ${current ? 'rail-active font-semibold text-ink' : 'text-muted hover:bg-soft hover:text-ink'}`}
-                  aria-current={current ? 'step' : undefined}
-                >
-                  <span
-                    aria-hidden
-                    className={`relative z-10 grid h-6 w-6 shrink-0 place-items-center rounded-full border text-[11px] font-bold mono transition-colors ${current ? 'border-teal bg-teal text-white shadow-[0_0_0_4px_var(--tint)]' : done || past ? 'border-teal bg-tint text-teal' : 'border-line bg-surface text-muted group-hover:border-teal'}`}
+
+        <div>
+          <div className="flex items-center justify-between px-3 pb-2">
+            <p className="side-heading">{L('Analysis pipeline', 'مسار التحليل')}</p>
+            <span className="mono text-[11px] text-[#8d99b3] ltr">{done}/8</span>
+          </div>
+          <div className="mx-3 mb-3 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden>
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#0f9d8a] to-[#2ec4ae] transition-all duration-700"
+              style={{ width: `${(done / 8) * 100}%` }}
+            />
+          </div>
+          <ol className="space-y-0.5">
+            {STAGES.map((s) => {
+              const current = pathname === s.path;
+              const seen = !current && visited.has(s.path);
+              return (
+                <li key={s.path}>
+                  <SideLink
+                    to={s.path}
+                    icon={STAGE_ICONS[s.path]}
+                    onNavigate={onNavigate}
+                    badge={
+                      <span
+                        className={`mono grid h-5 min-w-5 place-items-center rounded-md px-1 text-[10.5px] font-bold ${current ? 'bg-[#2ec4ae] text-[#05201b]' : seen ? 'text-[#2ec4ae]' : 'text-[#5f6c88]'}`}
+                      >
+                        {seen ? '✓' : String(s.step).padStart(2, '0')}
+                      </span>
+                    }
                   >
-                    {done ? '✓' : s.step}
-                  </span>
-                  <span className="truncate">{L(s.en, s.ar)}</span>
-                  <span className="sr-only">
-                    {current ? L('(current)', '(الحالية)') : done ? L('(done)', '(تمت)') : ''}
-                  </span>
-                </NavLink>
-              </li>
-            );
-          })}
-        </ol>
+                    {L(s.en, s.ar)}
+                  </SideLink>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        <div className="space-y-1">
+          <p className="side-heading px-3 pb-1">{L('Tools', 'أدوات')}</p>
+          <SideLink to="/r" icon="code" onNavigate={onNavigate}>
+            {L('Run it in R', 'شغّله في R')}
+          </SideLink>
+          <SideLink to="/about" icon="info" onNavigate={onNavigate}>
+            {L('About the project', 'عن المشروع')}
+          </SideLink>
+        </div>
+      </nav>
+
+      <div className="m-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="flex items-center gap-2 text-[12px] font-semibold text-white">
+          <span
+            className={`relative flex h-2 w-2 ${ds.source === 'supabase' ? 'text-[#2ec4ae]' : 'text-[#f2b451]'}`}
+          >
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
+          </span>
+          {ds.source === 'supabase'
+            ? L('Supabase · live', 'Supabase · متصل')
+            : L('Local dataset', 'بيانات محلية')}
+        </div>
+        <p className="mt-2 text-[12px] leading-relaxed text-[#8d99b3]">
+          student-por.csv · <span className="ltr mono">649 × 33</span>
+          <br />
+          {ds.source === 'supabase'
+            ? L(`Postgres table students · ${ds.ms} ms`, `جدول Postgres students · ${ds.ms} ms`)
+            : L('UCI Machine Learning Repository', 'مستودع UCI لتعلّم الآلة')}
+        </p>
       </div>
-      <div className="rail-card">
-        <p className="eyebrow px-1">{L('Tools', 'أدوات')}</p>
-        <ul className="mt-2">
-          {TOOLS.map((s) => (
-            <li key={s.path}>
-              <NavLink
-                to={s.path}
-                onClick={onNavigate}
-                className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition-colors ${isActive ? 'rail-active font-semibold text-ink' : 'text-muted hover:bg-soft hover:text-ink'}`}
-              >
-                <span className="grid h-6 w-6 place-items-center rounded-lg bg-soft text-muted">{TOOL_ICONS[s.path]}</span>
-                {L(s.en, s.ar)}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+    </div>
+  );
+}
+
+function CommandBar({ compact = false }: { compact?: boolean }) {
+  const { L } = useLang();
+  const navigate = useNavigate();
+  const [q, setQ] = useState('');
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        ref.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const s = q.trim();
+    if (!s) return;
+    navigate(`/ask?q=${encodeURIComponent(s)}&t=${Date.now()}`);
+    setQ('');
+    ref.current?.blur();
+  };
+  return (
+    <form onSubmit={submit} role="search" className={`relative w-full ${compact ? '' : 'max-w-[620px]'}`}>
+      <label htmlFor={compact ? 'cmd-m' : 'cmd'} className="sr-only">
+        {L('Ask PULSE for an analysis', 'اطلب تحليل من PULSE')}
+      </label>
+      <Icon
+        name="spark"
+        className="pointer-events-none absolute start-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-teal"
+      />
+      <input
+        id={compact ? 'cmd-m' : 'cmd'}
+        ref={ref}
+        dir="auto"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        autoComplete="off"
+        placeholder={L(
+          'Ask for any analysis… e.g. compare G3 by school',
+          'اطلب أي تحليل… مثلًا: قارن العلامة حسب المدرسة',
+        )}
+        className="cmd-input"
+      />
+      {!compact && (
+        <kbd className="mono pointer-events-none absolute end-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-line bg-soft px-1.5 py-0.5 text-[11px] text-muted md:block ltr">
+          Ctrl K
+        </kbd>
+      )}
+    </form>
+  );
+}
+
+function TopBar({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
+  const { L, lang, setLang } = useLang();
+  const { theme, toggle } = useTheme();
+  return (
+    <header className="no-print sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] backdrop-blur-xl">
+      <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          className="icon-btn lg:hidden"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          onClick={onMenu}
+        >
+          <Icon name={menuOpen ? 'close' : 'menu'} className="h-5 w-5" />
+          <span className="sr-only">{L('Menu', 'القائمة')}</span>
+        </button>
+        <Link to="/" className="flex items-center gap-2 lg:hidden">
+          <Logo size={30} />
+          <span className="font-display text-lg font-extrabold">PULSE</span>
+        </Link>
+        <div className="hidden flex-1 md:block">
+          <CommandBar />
+        </div>
+        <div className="ms-auto flex items-center gap-2">
+          <button
+            type="button"
+            className="icon-btn w-auto px-3 text-[13px] font-semibold"
+            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+            lang={lang === 'en' ? 'ar' : 'en'}
+          >
+            <Icon name="globe" className="h-4 w-4" />
+            {lang === 'en' ? 'العربية' : 'English'}
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={toggle}
+            aria-label={
+              theme === 'dark'
+                ? L('Switch to light theme', 'التبديل إلى الوضع الفاتح')
+                : L('Switch to dark theme', 'التبديل إلى الوضع الداكن')
+            }
+          >
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </div>
-      <div className="rounded-2xl bg-[var(--navy)] p-4 text-[13px] text-[#c9d2e3]">
-        <p className="mono text-[10.5px] uppercase tracking-[0.14em] text-[#2ec4ae]">{L('Dataset', 'البيانات')}</p>
-        <p className="mt-1.5 font-semibold text-white">student-por.csv</p>
-        <p className="mt-0.5 text-[12px] text-[#98a3ba]">{L('649 students · 33 columns · UCI', '649 طالبًا · 33 عمودًا · UCI')}</p>
+      <div className="px-4 pb-3 md:hidden">
+        <CommandBar compact />
       </div>
+    </header>
+  );
+}
+
+function TabBar({ onMenu }: { onMenu: () => void }) {
+  const { L } = useLang();
+  const tab = ({ isActive }: { isActive: boolean }) => `tab-item ${isActive ? 'text-teal' : 'text-muted'}`;
+  return (
+    <nav
+      aria-label={L('Quick navigation', 'تنقل سريع')}
+      className="no-print fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+    >
+      <NavLink to="/" end className={tab}>
+        <Icon name="grid" className="h-5 w-5" />
+        {L('Dashboard', 'الرئيسية')}
+      </NavLink>
+      <NavLink to="/ask" className={tab}>
+        <Icon name="spark" className="h-5 w-5" />
+        {L('Ask', 'اسأل')}
+      </NavLink>
+      <button type="button" className="tab-item text-muted" onClick={onMenu}>
+        <Icon name="layers" className="h-5 w-5" />
+        {L('Stages', 'المراحل')}
+      </button>
+      <NavLink to="/report" className={tab}>
+        <Icon name="doc" className="h-5 w-5" />
+        {L('Report', 'التقرير')}
+      </NavLink>
     </nav>
   );
 }
 
-function StageStepper() {
-  const { L } = useLang();
-  const { pathname } = useLocation();
-  const idx = STAGES.findIndex((s) => s.path === pathname);
-  if (idx < 0) return null;
-  return (
-    <ol className="hidden items-center gap-1 xl:flex" aria-label={L('Stages', 'المراحل')}>
-      {STAGES.map((s, i) => (
-        <li key={s.path} className="flex items-center gap-1">
-          <NavLink
-            to={s.path}
-            className={`rounded-full px-2.5 py-1 text-[12.5px] font-medium transition-colors ${i === idx ? 'bg-ink text-paper' : i < idx ? 'text-teal hover:bg-soft' : 'text-muted hover:bg-soft hover:text-ink'}`}
-          >
-            <span className="mono me-1 opacity-70">{s.step}</span>
-            {L(s.en, s.ar)}
-          </NavLink>
-          {i < STAGES.length - 1 && <span aria-hidden className={`h-px w-3 ${i < idx ? 'bg-teal' : 'bg-line'}`} />}
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 export function Layout({ children }: { children: ReactNode }) {
-  const { L, lang, setLang } = useLang();
-  const { theme, toggle } = useTheme();
+  const { L } = useLang();
   const { pathname } = useLocation();
   const visited = useVisited(pathname);
   const [menu, setMenu] = useState(false);
@@ -168,82 +348,58 @@ export function Layout({ children }: { children: ReactNode }) {
     window.scrollTo(0, 0);
     setMenu(false);
   }, [pathname]);
-  const home = pathname === '/';
   return (
     <div className="min-h-screen">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-2">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-2"
+      >
         {L('Skip to content', 'انتقل إلى المحتوى')}
       </a>
-      <header className="no-print sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--paper)_82%,transparent)] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1480px] items-center gap-4 px-4 sm:px-6">
-          <button type="button" className="btn-ghost px-2.5 lg:hidden" aria-expanded={menu} aria-controls="mobile-rail" onClick={() => setMenu((m) => !m)}>
-            <span aria-hidden>☰</span>
-            <span className="sr-only">{L('Menu', 'القائمة')}</span>
-          </button>
-          <Link to="/" className="flex shrink-0 items-center gap-2.5 font-display text-[19px] font-extrabold tracking-tight">
-            <Logo size={32} />
-            <span className="leading-none">
-              PULSE
-              <span className="mt-0.5 block text-[11px] font-medium tracking-normal text-muted">{L('Analysis Studio', 'استوديو التحليل')}</span>
-            </span>
-          </Link>
-          <div className="mx-auto">
-            <StageStepper />
-          </div>
-          <div className="ms-auto flex items-center gap-2 xl:ms-0">
-            {pathname !== '/ask' && (
-              <Link to="/ask" className="btn-primary hidden sm:inline-flex">
-                <span aria-hidden>✦</span> {L('Ask PULSE', 'اسأل PULSE')}
-              </Link>
-            )}
-            <button type="button" className="btn-ghost px-3" onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} lang={lang === 'en' ? 'ar' : 'en'}>
-              {lang === 'en' ? 'العربية' : 'English'}
-            </button>
-            <button type="button" className="btn-ghost w-10 px-0" onClick={toggle} aria-label={theme === 'dark' ? L('Switch to light theme', 'التبديل إلى الوضع الفاتح') : L('Switch to dark theme', 'التبديل إلى الوضع الداكن')}>
-              <span aria-hidden>{theme === 'dark' ? '☀' : '☾'}</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <aside className="sidebar no-print fixed inset-y-0 start-0 z-40 hidden w-[272px] lg:block">
+        <Sidebar visited={visited} />
+      </aside>
       {menu && (
-        <div id="mobile-rail" className="no-print fixed inset-x-0 bottom-0 top-16 z-20 overflow-y-auto bg-paper p-4 lg:hidden">
-          <Rail visited={visited} onNavigate={() => setMenu(false)} />
+        <div className="no-print fixed inset-0 z-40 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-[rgba(5,9,20,.55)] backdrop-blur-sm"
+            aria-label={L('Close menu', 'إغلاق القائمة')}
+            onClick={() => setMenu(false)}
+          />
+          <aside
+            id="mobile-nav"
+            className="sidebar fade-in-side absolute inset-y-0 start-0 w-[86%] max-w-[300px] shadow-2xl"
+          >
+            <Sidebar visited={visited} onNavigate={() => setMenu(false)} />
+          </aside>
         </div>
       )}
-      <div className={home ? '' : 'mx-auto flex max-w-[1480px] gap-8 px-4 sm:px-6'}>
-        {!home && (
-          <aside className="no-print sticky top-16 hidden h-[calc(100vh-4rem)] w-[248px] shrink-0 overflow-y-auto py-6 lg:block">
-            <Rail visited={visited} />
-          </aside>
-        )}
-        <main id="main" className={`min-w-0 flex-1 ${home ? '' : 'py-6'}`}>
+      <div className="lg:ps-[272px]">
+        <TopBar onMenu={() => setMenu((m) => !m)} menuOpen={menu} />
+        <main
+          id="main"
+          className="mx-auto min-w-0 max-w-[1320px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-8"
+        >
           {children}
         </main>
-      </div>
-      <footer className="no-print mt-20 border-t border-line bg-surface">
-        <div className="mx-auto grid max-w-[1480px] gap-6 px-4 py-10 sm:grid-cols-3 sm:px-6">
-          <div>
-            <Link to="/" className="flex items-center gap-2 font-display text-lg font-extrabold">
-              <Logo size={26} /> PULSE
-            </Link>
-            <p className="mt-2 max-w-xs text-sm text-muted">
-              {L('Predicting & Understanding Learning Success in Education', 'التنبؤ بنجاح الطلاب في التعليم وفهمه')}
+        <footer className="no-print border-t border-line px-4 py-8 text-sm text-muted sm:px-6 lg:px-8 lg:pb-8 pb-28">
+          <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-4">
+            <p className="flex items-center gap-2">
+              <Logo size={20} />
+              <span className="font-semibold text-ink">PULSE</span>
+              <span>· {L('Data Science Programming (R)', 'برمجة علم البيانات (R)')}</span>
+            </p>
+            <p>
+              {L(
+                'Data: Cortez & Silva (2008), UCI Machine Learning Repository',
+                'البيانات: Cortez و Silva (2008)، مستودع UCI لتعلّم الآلة',
+              )}
             </p>
           </div>
-          <div className="text-sm">
-            <p className="eyebrow">{L('Course', 'المادة')}</p>
-            <p className="mt-2 text-muted">{L('Data Science Programming (R)', 'برمجة علم البيانات (R)')}</p>
-            <p className="text-muted">{L('Data Analysis and Visualization Project', 'مشروع تحليل البيانات وتصويرها')}</p>
-          </div>
-          <div className="text-sm">
-            <p className="eyebrow">{L('Data', 'البيانات')}</p>
-            <p className="mt-2 text-muted">{L('Cortez & Silva (2008), UCI Machine Learning Repository', 'Cortez و Silva (2008)، مستودع UCI لتعلّم الآلة')}</p>
-            <Link to="/about" className="mt-1 inline-block font-medium text-teal hover:underline">
-              {L('About the project', 'عن المشروع')}
-            </Link>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
+      <TabBar onMenu={() => setMenu(true)} />
     </div>
   );
 }

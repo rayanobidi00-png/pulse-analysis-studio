@@ -29,6 +29,9 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # Optional: with these two repository secrets the site reads the data from Supabase.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
       - uses: peaceiris/actions-gh-pages@v4
         with:
@@ -36,3 +39,14 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages
           force_orphan: true
+      # Optional second host, like Faisal Garage: Cloudflare Pages (needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets).
+      - name: Deploy to Cloudflare Pages
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          npm run build
+          npx wrangler@4 pages deploy dist --project-name pulse-analysis-studio --branch main

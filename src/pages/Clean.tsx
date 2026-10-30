@@ -1,19 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { Database } from 'sql.js';
 import { ChartFrame, LegendItem } from '../components/charts/ChartFrame';
 import { BoxPlotSvg, HistogramSvg, VBarSvg } from '../components/charts/Charts';
 import { Caveat, CodeTabs, Interp, NextStep, PageHeader, Section, SimpleTable, Stat, Toggle, type CodeTab } from '../components/ui';
 import { rBetween } from '../content/rcode';
 import { ADDED_COLUMNS, BAND_LABELS, FACTOR_CONVERTED, FAIL_LABELS, MEDU_LABELS, STUDY_LABELS } from '../data/clean';
-import { DUPLICATES_SQL, FACTOR_SQL, FEATURE_SQL, MINMAX_SQL, NA_CHECK_SQL, OUTLIER_SQL, ZERO_G3_SQL, ZSCORE_SQL } from '../data/cleanSql';
-import { runQuery } from '../data/db';
 import { COLUMN_NAMES } from '../data/parse';
 import { useLang } from '../i18n/lang';
 import { fmt } from '../lib/format';
 import { mulberry32 } from '../lib/random';
 import { extractFn } from '../lib/source';
 import { useAnalysis } from '../state/analysis';
-import { useDb } from '../state/useDb';
 import { mean, median, sd } from '../stats/descriptive';
 import cleanSrc from '../data/clean.ts?raw';
 import descSrc from '../stats/descriptive.ts?raw';
@@ -21,9 +17,9 @@ import parseSrc from '../data/parse.ts?raw';
 
 type L = (en: string, ar: string) => string;
 
-function columnCount(db: Database, table: string): number {
-  return runQuery(db, `SELECT COUNT(*) FROM pragma_table_info('${table}')`).values[0][0] as number;
-}
+const RAW_COLS = COLUMN_NAMES.length;
+/** Columns of students_clean after steps 5..8 (each step adds its own new columns). */
+const COLS_AFTER: Record<number, number> = { 4: RAW_COLS, 5: RAW_COLS + 3, 6: RAW_COLS + 7, 7: RAW_COLS + 9, 8: RAW_COLS + 10 };
 
 /** Damages a copy of three numeric columns (5% NA each) and shows what imputation and na.omit() do. */
 const DAMAGED = ['G3', 'absences', 'age'] as const;
@@ -72,8 +68,8 @@ interface StepDef {
   decision: string;
   reason: string;
   code: CodeTab[];
-  /** Runs the step's SQL and returns before/after column counts plus rendered result. */
-  run: (db: Database) => { before: string; after: string; body: ReactNode };
+  /** Runs the step on the loaded rows and returns before/after counts plus the rendered result. */
+  run: () => { before: string; after: string; body: ReactNode };
 }
 
 function StepCard({ step, result, onRun, ready }: { step: StepDef; result?: { before: string; after: string; body: ReactNode }; onRun: () => void; ready: boolean }) {
@@ -122,7 +118,6 @@ function StepCard({ step, result, onRun, ready }: { step: StepDef; result?: { be
 export default function Clean() {
   const A = useAnalysis();
   const { L } = useLang();
-  const { db } = useDb();
   const [results, setResults] = useState<Record<number, ReturnType<StepDef['run']>>>({});
   const [simulate, setSimulate] = useState(false);
   const g3 = A.raw.map((r) => r.G3);
@@ -141,12 +136,11 @@ export default function Clean() {
         `لا توجد سوى ${A.total_na} قيمة مفقودة في جميع الأعمدة الـ ${A.n_cols}. التعويض أو حذف الصفوف لن يضيف إلا تشويشًا؛ ويوضح المفتاح أدناه ما كنا سنفعله لو كانت البيانات متضررة.`,
       ),
       code: [
-        { label: 'SQL', lang: 'sql', code: NA_CHECK_SQL },
         { label: 'R', lang: 'r', code: rBetween('na_per_col <-', '# Special case') },
         { label: 'TypeScript', lang: 'ts', code: extractFn(parseSrc, 'countNA') },
       ],
-      run: (db) => {
-        const r = runQuery(db, NA_CHECK_SQL);
+      run: () => {
+        const r = { columns: COLUMN_NAMES as readonly string[], values: [COLUMN_NAMES.map((c) => A.na_per_col[c] ?? 0)] };
         const total = r.values[0].reduce<number>((s, v) => s + Number(v), 0);
         return {
           before: `${shape(A.n_rows, A.n_cols)} · NA ${total}`,
@@ -171,12 +165,11 @@ export default function Clean() {
       decision: L('Nothing to remove.', 'لا شيء للحذف.'),
       reason: L(`duplicated(df) finds ${A.duplicates} duplicated rows, so every row is a distinct student.`, `تجد duplicated(df) عدد ${A.duplicates} صفوف مكررة، فكل صف طالب مختلف.`),
       code: [
-        { label: 'SQL', lang: 'sql', code: DUPLICATES_SQL },
         { label: 'R', lang: 'r', code: 'cat("Duplicated rows :", sum(duplicated(df)), "\\n")' },
         { label: 'TypeScript', lang: 'ts', code: extractFn(parseSrc, 'countDuplicates') },
       ],
-      run: (db) => {
-        const d = Number(runQuery(db, DUPLICATES_SQL).values[0][0]);
+      run: () => {
+        const d = A.duplicates;
         return { before: L(`${A.n_rows} rows · ${d} duplicates`, `${A.n_rows} صفًا · ${d} مكرر`), after: L(`${A.n_rows - d} rows`, `${A.n_rows - d} صفًا`), body: null };
       },
     },
@@ -190,11 +183,11 @@ export default function Clean() {
         `لدى ${A.zero_g3} طالبًا G3 = 0 رغم أن معظمهم حصل على علامات غير صفرية في G1 وG2: أي أنهم لم يتقدموا للامتحان النهائي. الصفر نتيجة حقيقية، وحذفهم سيخفي الرسوب ويرفع نسبة النجاح بشكل مضلل.`,
       ),
       code: [
-        { label: 'SQL', lang: 'sql', code: ZERO_G3_SQL },
         { label: 'R', lang: 'r', code: rBetween('zero_g3 <-', '# Outliers in absences') },
       ],
-      run: (db) => {
-        const r = runQuery(db, ZERO_G3_SQL);
+      run: () => {
+        const zero = A.raw.filter((s) => s.G3 === 0);
+        const r = { columns: ['school', 'sex', 'age', 'failures', 'absences', 'G1', 'G2', 'G3'], values: zero.map((s) => [s.school, s.sex, s.age, s.failures, s.absences, s.G1, s.G2, s.G3]) };
         return {
           before: L(`${r.values.length} students with G3 = 0`, `${r.values.length} طالبًا بعلامة G3 = 0`),
           after: L(`${A.n_rows} rows kept`, `أُبقي على ${A.n_rows} صفًا`),
@@ -213,11 +206,10 @@ export default function Clean() {
       ),
       code: [
         { label: 'R', lang: 'r', code: rBetween('# Outliers in absences', '# ====') },
-        { label: 'SQL', lang: 'sql', code: OUTLIER_SQL.replace(':fence', String(A.absences_upper_fence)) },
         { label: 'TypeScript', lang: 'ts', code: `${extractFn(descSrc, 'quantile')}\n\n${extractFn(descSrc, 'boxStats')}` },
       ],
-      run: (db) => {
-        const r = runQuery(db, OUTLIER_SQL.replace(':fence', String(A.absences_upper_fence)));
+      run: () => {
+        const r = { values: [[abs.filter((v) => v > A.absences_upper_fence).length]] };
         return {
           before: L(`${r.values[0][0]} outliers (> ${A.absences_upper_fence})`, `${r.values[0][0]} قيمة متطرفة (> ${A.absences_upper_fence})`),
           after: L(`${A.n_rows} rows kept`, `أُبقي على ${A.n_rows} صفًا`),
@@ -241,15 +233,13 @@ export default function Clean() {
       decision: L('school, sex, address relabelled; 8 yes/no columns with levels no < yes; studytime_f, failures_f, Medu_f added as ordered factors.', 'أُعيدت تسمية school وsex وaddress؛ و8 أعمدة نعم/لا بمستويات no < yes؛ وأضيفت studytime_f وfailures_f وMedu_f كعوامل مرتبة.'),
       reason: L('R treats factors as groups in t.test(), aov(), chisq.test() and lm(); ordered factors keep the natural order in tables and charts, and failures 2 and 3 are merged into "2+" because they are rare.', 'يعامل R العوامل كمجموعات في t.test() وaov() وchisq.test() وlm()؛ وتحافظ العوامل المرتبة على الترتيب الطبيعي في الجداول والرسوم، ودُمجت قيمتا الرسوب 2 و3 في "2+" لندرتهما.'),
       code: [
-        { label: 'SQL', lang: 'sql', code: FACTOR_SQL },
         { label: 'R', lang: 'r', code: rBetween('yes_no <-', '         pass ') },
         { label: 'TypeScript', lang: 'ts', code: extractFn(cleanSrc, 'cleanStudents') },
       ],
-      run: (db) => {
-        const before = columnCount(db, 'students_raw');
-        db.exec(FACTOR_SQL);
-        const after = columnCount(db, 'students_clean');
-        const lv = (sql: string) => runQuery(db, sql).values.map((v) => `${v[0]} (${v[1]})`).join(' · ');
+      run: () => {
+        const before = RAW_COLS;
+        const after = COLS_AFTER[5];
+        const lv = (k: 'school' | 'sex') => [...new Set(A.clean.map((s) => s[k]))].sort().map((l) => `${l} (${A.clean.filter((s) => s[k] === l).length})`).join(' · ');
         return {
           before: L(`${before} columns`, `${before} عمودًا`),
           after: L(`${after} columns`, `${after} عمودًا`),
@@ -257,8 +247,8 @@ export default function Clean() {
             <SimpleTable
               head={[L('Factor', 'العامل'), L('Levels (n)', 'المستويات (العدد)')]}
               rows={[
-                ['school', lv('SELECT school, COUNT(*) FROM students_clean GROUP BY school')],
-                ['sex', lv('SELECT sex, COUNT(*) FROM students_clean GROUP BY sex')],
+                ['school', lv('school')],
+                ['sex', lv('sex')],
                 ['studytime_f', STUDY_LABELS.map((l) => `${l} (${A.clean.filter((r) => r.studytime_f === l).length})`).join(' < ')],
                 ['failures_f', FAIL_LABELS.map((l) => `${l} (${A.clean.filter((r) => r.failures_f === l).length})`).join(' < ')],
                 ['Medu_f', MEDU_LABELS.map((l) => `${l} (${A.clean.filter((r) => r.Medu_f === l).length})`).join(' < ')],
@@ -275,16 +265,13 @@ export default function Clean() {
       decision: L('Four new analysis columns.', 'أربعة أعمدة تحليل جديدة.'),
       reason: L('pass is the binary outcome for chi-square and logistic regression; grade bands follow the Portuguese scale; alcohol combines two related ordinal items; avg_grade summarises the year.', 'pass هو الناتج الثنائي لاختبار مربع كاي والانحدار اللوجستي؛ وفئات العلامات تتبع السلم البرتغالي؛ وalcohol يجمع بندين ترتيبيين مترابطين؛ وavg_grade يلخص أداء السنة.'),
       code: [
-        { label: 'SQL', lang: 'sql', code: FEATURE_SQL },
         { label: 'R', lang: 'r', code: rBetween('         pass ', '         z_G3') },
         { label: 'TypeScript', lang: 'ts', code: extractFn(cleanSrc, 'gradeBand') },
       ],
-      run: (db) => {
-        const before = columnCount(db, 'students_clean');
-        db.exec(FEATURE_SQL);
-        const after = columnCount(db, 'students_clean');
-        const bands = runQuery(db, 'SELECT grade_band, COUNT(*) FROM students_clean GROUP BY grade_band');
-        const nOf = (b: string) => Number(bands.values.find((v) => v[0] === b)?.[1] ?? 0);
+      run: () => {
+        const before = COLS_AFTER[5];
+        const after = COLS_AFTER[6];
+        const nOf = (b: string) => A.clean.filter((s) => s.grade_band === b).length;
         return {
           before: L(`${before} columns`, `${before} عمودًا`),
           after: L(`${after} columns`, `${after} عمودًا`),
@@ -313,15 +300,13 @@ export default function Clean() {
       decision: L('Add z_G3 and z_absences.', 'إضافة z_G3 وz_absences.'),
       reason: L('Puts grades (0–20) and absences (0–32) on the same unit-free scale so they can be compared; the shape of each distribution does not change.', 'يضع العلامات (0–20) والغياب (0–32) على سلم واحد بلا وحدات لتسهيل المقارنة، دون تغيير شكل التوزيع.'),
       code: [
-        { label: 'SQL', lang: 'sql', code: ZSCORE_SQL },
         { label: 'R', lang: 'r', code: 'z_G3       = as.numeric(scale(G3)),\nz_absences = as.numeric(scale(absences)),\n\ncat("z_G3 mean =", round(mean(students$z_G3), 4), " sd =", round(sd(students$z_G3), 4), "\\n")' },
         { label: 'TypeScript', lang: 'ts', code: extractFn(descSrc, 'zScores') },
       ],
-      run: (db) => {
-        const before = columnCount(db, 'students_clean');
-        db.exec(ZSCORE_SQL);
-        const after = columnCount(db, 'students_clean');
-        const z = runQuery(db, 'SELECT z_G3 FROM students_clean').values.map((v) => Number(v[0]));
+      run: () => {
+        const before = COLS_AFTER[6];
+        const after = COLS_AFTER[7];
+        const z = A.clean.map((s) => s.z_G3);
         return {
           before: L(`${before} columns`, `${before} عمودًا`),
           after: L(`${after} columns · mean ${fmt(mean(z), 4)} · sd ${fmt(sd(z), 4)}`, `${after} عمودًا · المتوسط ${fmt(mean(z), 4)} · الانحراف ${fmt(sd(z), 4)}`),
@@ -345,16 +330,14 @@ export default function Clean() {
       decision: L('Add norm_absences in [0, 1].', 'إضافة norm_absences ضمن [0، 1].'),
       reason: L('A bounded 0–1 version is handy for distance-based methods and for charts; unlike the z-score it keeps 0 meaning "never absent".', 'نسخة محصورة بين 0 و1 مفيدة للطرق المعتمدة على المسافة وللرسوم؛ وعلى خلاف z-score يبقى الصفر بمعنى "لم يتغيب أبدًا".'),
       code: [
-        { label: 'SQL', lang: 'sql', code: MINMAX_SQL },
         { label: 'R', lang: 'r', code: 'norm_absences = (absences - min(absences)) / (max(absences) - min(absences))\n\ncat("norm_absences range =", range(students$norm_absences), "\\n")' },
         { label: 'TypeScript', lang: 'ts', code: extractFn(descSrc, 'minMax') },
       ],
-      run: (db) => {
-        const before = columnCount(db, 'students_clean');
-        db.exec(MINMAX_SQL);
-        const after = columnCount(db, 'students_clean');
-        const r = runQuery(db, 'SELECT MIN(norm_absences), MAX(norm_absences) FROM students_clean').values[0];
-        const vals = runQuery(db, 'SELECT norm_absences FROM students_clean').values.map((v) => Number(v[0]));
+      run: () => {
+        const before = COLS_AFTER[7];
+        const after = COLS_AFTER[8];
+        const vals = A.clean.map((s) => s.norm_absences);
+        const r = [Math.min(...vals), Math.max(...vals)];
         const span = Math.max(...abs) - Math.min(...abs);
         return {
           before: L(`${before} columns`, `${before} عمودًا`),
@@ -370,33 +353,31 @@ export default function Clean() {
   ];
 
   const runUpTo = (n: number) => {
-    if (!db) return;
     const next = { ...results };
-    if (n < 5) next[n] = steps[n - 1].run(db);
+    if (n < 5) next[n] = steps[n - 1].run();
     else {
       // steps 5-8 build students_clean in order, so running one replays the chain from step 5
       for (let k = 5; k <= 8; k++) delete next[k];
-      for (let k = 5; k <= n; k++) next[k] = steps[k - 1].run(db);
+      for (let k = 5; k <= n; k++) next[k] = steps[k - 1].run();
     }
     setResults(next);
   };
   const runAll = () => {
-    if (!db) return;
     const next: typeof results = {};
-    for (const s of steps) next[s.n] = s.run(db);
+    for (const s of steps) next[s.n] = s.run();
     setResults(next);
   };
   // Open the page with every step already run, so the reader sees results at once.
   const autoRan = useRef(false);
   useEffect(() => {
-    if (db && !autoRan.current) {
+    if (!autoRan.current) {
       autoRan.current = true;
       runAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db]);
+  }, []);
   const done = Object.keys(results).length === 8;
-  const cleanCols = done && db ? runQuery(db, 'SELECT * FROM students_clean LIMIT 1').columns : [];
+  const cleanCols = done ? Object.keys(A.clean[0]) : [];
 
   return (
     <div>
@@ -405,20 +386,20 @@ export default function Clean() {
         eyebrow={L('Clean and preprocess', 'التنظيف والمعالجة المسبقة')}
         title={L('Eight checks before any statistics', 'ثماني خطوات قبل أي إحصاء')}
         lead={L(
-          'Each step runs real SQL against the in-browser database, shows the counts before and after, the equivalent R code, and the decision we took with its reason.',
-          'تشغّل كل خطوة استعلام SQL حقيقيًا على قاعدة البيانات داخل المتصفح، وتعرض الأعداد قبل وبعد، وكود R المكافئ، والقرار الذي اتخذناه مع سببه.',
+          'Each step runs on the 649 loaded rows, shows the counts before and after, the R code from pulse_analysis.R next to the TypeScript that ran, and the decision we took with its reason.',
+          'تشتغل كل خطوة على الـ 649 صف المحمّلة، وتعرض الأعداد قبل وبعد، وكود R من pulse_analysis.R جنب كود TypeScript اللي اشتغل، والقرار اللي أخذناه مع سببه.',
         )}
       />
       <div className="no-print mb-6 flex flex-wrap items-center gap-3">
-        <button type="button" className="btn-primary" onClick={runAll} disabled={!db}>
-          {db ? L('Re-run all 8 steps', 'إعادة تشغيل الخطوات الثماني') : L('Starting SQLite…', 'جارٍ تشغيل SQLite…')}
+        <button type="button" className="btn-primary" onClick={runAll}>
+          {L('Re-run all 8 steps', 'إعادة تشغيل الخطوات الثماني')}
         </button>
         <span className="text-sm text-muted">{L(`${Object.keys(results).length} of 8 steps run`, `نُفذت ${Object.keys(results).length} من 8 خطوات`)}</span>
       </div>
       <div className="space-y-5">
         {steps.map((s) => (
           <div key={s.n}>
-            <StepCard step={s} result={results[s.n]} onRun={() => runUpTo(s.n)} ready={!!db} />
+            <StepCard step={s} result={results[s.n]} onRun={() => runUpTo(s.n)} ready />
             {s.n === 1 && results[1] && (
               <div className="mt-3 px-1">
                 <Toggle label={L('Simulate 5% missing values (demonstration)', 'محاكاة 5% من القيم المفقودة (للتوضيح)')} checked={simulate} onChange={setSimulate} />

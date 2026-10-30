@@ -20,3 +20,9 @@
 - Professional redesign: dark stage hero on every page, header stage stepper, card-style pipeline sidebar with progress, refined cards, tables, callouts and next-step navigation. Clean runs all 8 steps on load.
 - New page **Ask PULSE** (`#/ask`): type a request in English or Arabic and the site runs it (clean, missing values, duplicates, outliers, describe, histogram, box, bar, pie, scatter, correlation, t-tests, chi-square, ANOVA + Tukey, regression, pass rate, counts and means with filters, top-N, SQL). Engine in `src/assistant/engine.ts`; 27 tests in `tests/assistant.test.ts` check the parser and that answers match R.
 - Deployment now publishes `dist/` to the `gh-pages` branch, which GitHub Pages serves.
+
+## 2026-10-30 · Dashboard redesign, Supabase instead of SQLite
+- Removed sql.js, the SQL console and the SQL cleaning scripts; cleaning, the data explorer and Ask PULSE run on the loaded rows in TypeScript.
+- Added `src/data/backend.ts` (Supabase or bundled CSV), `supabase/migrations/20261030000000_pulse_schema.sql`, `supabase/push.mjs` (`npm run db:push`), `.env.example`, and optional Cloudflare Pages deploy in the workflow.
+- New app shell and dashboard home; Ask PULSE takes requests from the top bar (`#/ask?q=…`).
+- Next: owner creates the Supabase project and adds the keys as repository secrets.

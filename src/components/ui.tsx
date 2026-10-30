@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n/lang';
 import { highlight } from '../lib/highlight';
+import { STAGES } from '../content/stages';
+import { Icon } from './Icon';
 
 export function PageHeader({
   step,
@@ -15,25 +17,61 @@ export function PageHeader({
   lead: string;
 }) {
   const { L } = useLang();
+  const prev = step ? STAGES[step - 2] : undefined;
+  const next = step ? STAGES[step] : undefined;
   return (
-    <header className="page-hero mb-10">
-      <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <div className="flex flex-wrap items-center gap-3">
-            {step !== undefined && (
-              <span className="mono rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11.5px] font-semibold tracking-[0.12em] text-[#2ec4ae] ltr">
-                {L('STAGE', 'المرحلة')} {String(step).padStart(2, '0')} / 08
+    <header className="hero-banner mb-8">
+      <div className="relative z-10 px-6 py-7 sm:px-9 sm:py-9">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <nav
+            aria-label={L('Breadcrumb', 'مسار الصفحة')}
+            className="flex flex-wrap items-center gap-2 text-[12.5px] text-[#98a3ba]"
+          >
+            <Link to="/" className="hover:text-white">
+              {L('Dashboard', 'لوحة التحكم')}
+            </Link>
+            <span aria-hidden>/</span>
+            {step !== undefined ? (
+              <span className="mono rounded-full bg-[#2ec4ae] px-2.5 py-0.5 text-[11px] font-bold tracking-[0.08em] text-[#05201b] ltr">
+                {L('STAGE', 'المرحلة')} {String(step).padStart(2, '0')}/08
               </span>
-            )}
-            <span className="mono text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#98a3ba]">{eyebrow}</span>
-          </div>
-          <h1 className="mt-4 text-[34px] font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-[52px]">{title}</h1>
-          <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-[#b8c2d6] sm:text-[17px]">{lead}</p>
+            ) : null}
+            <span className="font-medium text-[#c9d2e3]">{eyebrow}</span>
+          </nav>
+          {step !== undefined && (
+            <div className="no-print flex items-center gap-2">
+              {prev && (
+                <Link
+                  to={prev.path}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 text-[13px] font-semibold text-[#c9d2e3] hover:bg-white/10"
+                >
+                  <Icon name="back" className="h-3.5 w-3.5" />
+                  {L(prev.en, prev.ar)}
+                </Link>
+              )}
+              {next && (
+                <Link
+                  to={next.path}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3 text-[13px] font-semibold text-white hover:bg-white/20"
+                >
+                  {L(next.en, next.ar)}
+                  <Icon name="arrow" className="h-3.5 w-3.5" />
+                </Link>
+              )}
+            </div>
+          )}
         </div>
+        <h1 className="mt-5 max-w-4xl text-[30px] font-extrabold leading-[1.06] tracking-[-0.03em] text-white sm:text-[44px]">
+          {title}
+        </h1>
+        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-[#b8c2d6] sm:text-[16.5px]">{lead}</p>
         {step !== undefined && (
-          <div className="hidden shrink-0 gap-1.5 lg:flex" aria-hidden>
-            {Array.from({ length: 8 }, (_, i) => (
-              <span key={i} className={`h-1.5 w-7 rounded-full ${i + 1 < step ? 'bg-[#2ec4ae]/60' : i + 1 === step ? 'bg-[#2ec4ae]' : 'bg-white/15'}`} />
+          <div className="mt-6 flex gap-1.5" aria-hidden>
+            {STAGES.map((s, i) => (
+              <span
+                key={s.path}
+                className={`h-1.5 flex-1 rounded-full ${i + 1 < step ? 'bg-[#2ec4ae]/50' : i + 1 === step ? 'bg-[#2ec4ae]' : 'bg-white/10'}`}
+              />
             ))}
           </div>
         )}
@@ -58,7 +96,9 @@ export function Section({
       <div className="flex items-start gap-3">
         <span aria-hidden className="mt-2.5 h-5 w-1.5 shrink-0 rounded-full bg-teal" />
         <div className="min-w-0">
-          <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">{title}</h2>
+          <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">
+            {title}
+          </h2>
           {lead && <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-muted">{lead}</p>}
         </div>
       </div>
@@ -79,7 +119,11 @@ export function Kpi({
   const color = tone === 'teal' ? 'text-teal' : tone === 'coral' ? 'text-coral' : 'text-ink';
   return (
     <div className="bg-surface px-5 py-4">
-      <b className={`block font-display text-[28px] font-extrabold leading-none tracking-[-0.03em] num sm:text-[34px] ${color}`}>{value}</b>
+      <b
+        className={`block font-display text-[28px] font-extrabold leading-none tracking-[-0.03em] num sm:text-[34px] ${color}`}
+      >
+        {value}
+      </b>
       <span className="mt-1.5 block text-xs text-muted sm:text-[13px]">{label}</span>
     </div>
   );
@@ -153,10 +197,17 @@ export function NextStep({ to, label }: { to: string; label: string }) {
         className="group flex items-center justify-between gap-6 overflow-hidden rounded-2xl bg-[var(--navy)] px-6 py-6 text-white shadow-[0_20px_50px_-20px_rgba(11,18,34,.6)] transition-transform hover:-translate-y-0.5 sm:px-8"
       >
         <span>
-          <span className="mono block text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#2ec4ae]">{L('Next step', 'الخطوة التالية')}</span>
-          <span className="mt-1 block font-display text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]">{label}</span>
+          <span className="mono block text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#2ec4ae]">
+            {L('Next step', 'الخطوة التالية')}
+          </span>
+          <span className="mt-1 block font-display text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]">
+            {label}
+          </span>
         </span>
-        <span aria-hidden className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#2ec4ae] text-xl text-[#06201c] transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+        <span
+          aria-hidden
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#2ec4ae] text-xl text-[#06201c] transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
+        >
           {dir === 'rtl' ? '←' : '→'}
         </span>
       </Link>
@@ -263,7 +314,10 @@ export function Interp({ children }: { children: ReactNode }) {
   const { L } = useLang();
   return (
     <div className="rounded-xl border border-[color-mix(in_srgb,var(--teal)_25%,var(--line))] bg-tint px-5 py-4 text-[14.5px] leading-relaxed">
-      <span className="eyebrow mb-1.5 flex items-center gap-2"><span aria-hidden className="h-1.5 w-1.5 rounded-full bg-teal" />{L('Interpretation', 'التفسير')}</span>
+      <span className="eyebrow mb-1.5 flex items-center gap-2">
+        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-teal" />
+        {L('Interpretation', 'التفسير')}
+      </span>
       {children}
     </div>
   );

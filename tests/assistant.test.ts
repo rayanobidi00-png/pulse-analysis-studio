@@ -24,7 +24,6 @@ describe('Ask PULSE: understanding requests', () => {
     ['Did grades improve from G1 to G3?', 'paired', ['G3', 'G1']],
     ['Regression of G3 on G2 and failures', 'regression', ['G3', 'G2', 'failures']],
     ['Top 10 absences', 'top', ['absences']],
-    ['SELECT school, COUNT(*) FROM students_raw GROUP BY school', 'sql', []],
   ];
   it.each(cases)('%s', (q, intent, vars) => {
     const p = parseRequest(q);

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import initSqlJs from 'sql.js';
+import { readFileSync } from 'node:fs';
 import { COLUMNS, rClass } from '../src/content/columns';
-import { buildClean, loadRaw } from '../src/data/db';
+import { computeAll } from '../src/analysis/compute';
+import { rowsToCsv } from '../src/data/backend';
+import { COLUMN_NAMES, INTEGER_COLUMNS, parseCsv } from '../src/data/parse';
 import { A, R, csv } from './helpers';
 
 describe('column dictionary', () => {
@@ -19,38 +21,24 @@ describe('column dictionary', () => {
   });
 });
 
-describe('sql.js tables', () => {
-  it('students_raw and students_clean', async () => {
-    const SQL = await initSqlJs();
-    const db = new SQL.Database();
-    loadRaw(db, csv);
-    buildClean(db, csv);
-    const n = db.exec('SELECT COUNT(*) FROM students_raw')[0].values[0][0];
-    expect(n).toBe(649);
-    const avg = db.exec('SELECT AVG(G3) FROM students_raw')[0].values[0][0] as number;
-    expect(avg).toBeCloseTo(A.desc.find((d) => d.variable === 'G3')!.mean, 10);
-    const cols = db.exec('SELECT * FROM students_clean LIMIT 1')[0].columns;
-    expect(cols.length).toBe(43);
-    const pass = db.exec("SELECT COUNT(*) FROM students_clean WHERE pass = 'Pass'")[0].values[0][0];
-    expect(pass).toBe(R.pass_counts.Pass);
+describe('Supabase backend', () => {
+  it('rows from Postgres round-trip to the same CSV the analysis reads', () => {
+    const parsed = parseCsv(csv);
+    const back = parseCsv(rowsToCsv(parsed.rows));
+    expect(back.header).toEqual(parsed.header);
+    expect(back.rows).toEqual(parsed.rows);
+    expect(computeAll(rowsToCsv(parsed.rows)).desc).toEqual(A.desc);
   });
-});
-
-describe('SQL cleaning pipeline', () => {
-  it('builds the same students_clean as the TypeScript pipeline', async () => {
-    const { FACTOR_SQL, FEATURE_SQL, ZSCORE_SQL, MINMAX_SQL } = await import('../src/data/cleanSql');
-    const SQL = await initSqlJs();
-    const db = new SQL.Database();
-    loadRaw(db, csv);
-    for (const s of [FACTOR_SQL, FEATURE_SQL, ZSCORE_SQL, MINMAX_SQL]) db.exec(s);
-    const res = db.exec('SELECT * FROM students_clean')[0];
-    expect(res.columns).toEqual(Object.keys(A.clean[0]));
-    res.values.forEach((row, i) => {
-      res.columns.forEach((c, j) => {
-        const ts = (A.clean[i] as unknown as Record<string, unknown>)[c];
-        if (typeof ts === 'number') expect(Math.abs((row[j] as number) - ts)).toBeLessThan(1e-9);
-        else expect(row[j]).toBe(ts);
-      });
-    });
+  it('the migration creates every column with the right type', () => {
+    const sql = readFileSync('supabase/migrations/20261030000000_pulse_schema.sql', 'utf8');
+    for (const c of COLUMN_NAMES) {
+      const type = (INTEGER_COLUMNS as readonly string[]).includes(c) ? 'smallint' : 'text';
+      expect(sql).toContain(`"${c}" ${type} not null`);
+    }
+    expect(sql).toMatch(/enable row level security/);
+  });
+  it('the clean table has 43 columns', () => {
+    expect(Object.keys(A.clean[0]).length).toBe(43);
+    expect(A.clean.filter((s) => s.pass === 'Pass').length).toBe(R.pass_counts.Pass);
   });
 });
