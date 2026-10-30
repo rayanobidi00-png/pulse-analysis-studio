@@ -11,8 +11,30 @@ import { dot } from '../stats/linalg';
 type Profile = Pick<CleanStudent, PredictorKey>;
 type Lfn = (en: string, ar: string) => string;
 
-const DEFAULT_A: Profile = { failures: 0, higher: 'yes', studytime: 2, school: 'Gabriel Pereira', absences: 2, Dalc: 1, sex: 'Female', Medu: 2, schoolsup: 'no', internet: 'yes' };
-const DEFAULT_B: Profile = { failures: 2, higher: 'no', studytime: 1, school: 'Mousinho da Silveira', absences: 10, Dalc: 3, sex: 'Male', Medu: 1, schoolsup: 'no', internet: 'no' };
+const DEFAULT_A: Profile = {
+  failures: 0,
+  higher: 'yes',
+  studytime: 2,
+  school: 'Gabriel Pereira',
+  absences: 2,
+  Dalc: 1,
+  sex: 'Female',
+  Medu: 2,
+  schoolsup: 'no',
+  internet: 'yes',
+};
+const DEFAULT_B: Profile = {
+  failures: 2,
+  higher: 'no',
+  studytime: 1,
+  school: 'Mousinho da Silveira',
+  absences: 10,
+  Dalc: 3,
+  sex: 'Male',
+  Medu: 1,
+  schoolsup: 'no',
+  internet: 'no',
+};
 
 export function risk(p: number, L: Lfn): { label: string; tone: string } {
   if (p < 0.6) return { label: L('High risk', 'خطر مرتفع'), tone: 'bg-coral-tint text-coral' };
@@ -26,21 +48,56 @@ function Ruler({ value, sigma, L }: { value: number; sigma: number; L: Lfn }) {
   const v = Math.min(20, Math.max(0, value));
   return (
     <div dir="ltr">
-      <svg viewBox={`0 0 ${W} 90`} className="h-auto w-full" role="img" aria-label={L(`Predicted final grade ${fmt(v, 1)} out of 20`, `العلامة النهائية المتوقعة ${fmt(v, 1)} من 20`)}>
+      <svg
+        viewBox={`0 0 ${W} 90`}
+        className="h-auto w-full"
+        role="img"
+        aria-label={L(
+          `Predicted final grade ${fmt(v, 1)} out of 20`,
+          `العلامة النهائية المتوقعة ${fmt(v, 1)} من 20`,
+        )}
+      >
         <rect x={x(0)} y={36} width={x(10) - x(0)} height={12} rx={6} fill="var(--coral-tint)" />
         <rect x={x(10)} y={36} width={x(20) - x(10)} height={12} rx={6} fill="var(--tint)" />
-        <rect x={x(Math.max(0, v - sigma))} y={34} width={x(Math.min(20, v + sigma)) - x(Math.max(0, v - sigma))} height={16} rx={8} fill="var(--violet)" fillOpacity={0.22} />
+        <rect
+          x={x(Math.max(0, v - sigma))}
+          y={34}
+          width={x(Math.min(20, v + sigma)) - x(Math.max(0, v - sigma))}
+          height={16}
+          rx={8}
+          fill="var(--violet)"
+          fillOpacity={0.22}
+        />
         {Array.from({ length: 21 }, (_, g) => (
           <g key={g}>
             <line x1={x(g)} x2={x(g)} y1={52} y2={g % 5 === 0 ? 60 : 56} stroke="var(--muted)" />
-            {g % 5 === 0 && <text x={x(g)} y={74} textAnchor="middle" className="mono" style={{ fontSize: 11, fill: 'var(--muted)' }}>{g}</text>}
+            {g % 5 === 0 && (
+              <text
+                x={x(g)}
+                y={74}
+                textAnchor="middle"
+                className="mono"
+                style={{ fontSize: 11, fill: 'var(--muted)' }}
+              >
+                {g}
+              </text>
+            )}
           </g>
         ))}
         <line x1={x(10)} x2={x(10)} y1={26} y2={52} stroke="var(--ink)" strokeDasharray="3 3" />
-        <text x={x(10) + 4} y={24} style={{ fontSize: 10.5, fill: 'var(--muted)' }}>{L('pass mark', 'علامة النجاح')}</text>
+        <text x={x(10) + 4} y={24} style={{ fontSize: 10.5, fill: 'var(--muted)' }}>
+          {L('pass mark', 'علامة النجاح')}
+        </text>
         <g transform={`translate(${x(v)},42)`} style={{ transition: 'transform .4s ease' }}>
           <circle r={10} fill="var(--violet)" stroke="var(--surface)" strokeWidth={3} />
-          <text y={-16} textAnchor="middle" className="mono" style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}>{fmt(v, 1)}</text>
+          <text
+            y={-16}
+            textAnchor="middle"
+            className="mono"
+            style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
+          >
+            {fmt(v, 1)}
+          </text>
         </g>
       </svg>
     </div>
@@ -48,22 +105,102 @@ function Ruler({ value, sigma, L }: { value: number; sigma: number; L: Lfn }) {
 }
 
 function ProfileForm({ p, set, L, id }: { p: Profile; set: (p: Profile) => void; L: Lfn; id: string }) {
-  const yn = [{ value: 'yes', label: L('yes', 'نعم') }, { value: 'no', label: L('no', 'لا') }];
+  const yn = [
+    { value: 'yes', label: L('yes', 'نعم') },
+    { value: 'no', label: L('no', 'لا') },
+  ];
   const lab = (k: PredictorKey) => L(PREDICTOR_LABELS[k].en, PREDICTOR_LABELS[k].ar);
   return (
     <div className="grid grid-cols-2 gap-3">
-      <Slider label={lab('failures')} value={p.failures} min={0} max={3} step={1} onChange={(v) => set({ ...p, failures: v })} />
-      <Slider label={lab('absences')} value={p.absences} min={0} max={32} step={1} onChange={(v) => set({ ...p, absences: v })} />
-      <Select id={`${id}-study`} label={lab('studytime')} value={String(p.studytime)} onChange={(v) => set({ ...p, studytime: Number(v) })}
-        options={[['1', L('< 2 h', 'أقل من ساعتين')], ['2', L('2–5 h', '2–5 ساعات')], ['3', L('5–10 h', '5–10 ساعات')], ['4', L('> 10 h', 'أكثر من 10 ساعات')]].map(([value, label]) => ({ value, label }))} />
-      <Select id={`${id}-medu`} label={lab('Medu')} value={String(p.Medu)} onChange={(v) => set({ ...p, Medu: Number(v) })}
-        options={[['0', L('None', 'بلا تعليم')], ['1', L('Primary (4th)', 'ابتدائي')], ['2', L('5th–9th grade', 'الخامس–التاسع')], ['3', L('Secondary', 'ثانوي')], ['4', L('Higher', 'جامعي')]].map(([value, label]) => ({ value, label }))} />
-      <Select id={`${id}-dalc`} label={lab('Dalc')} value={String(p.Dalc)} onChange={(v) => set({ ...p, Dalc: Number(v) })} options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: String(n) }))} />
-      <Select id={`${id}-school`} label={L('School', 'المدرسة')} value={p.school} onChange={(v) => set({ ...p, school: v })} options={[{ value: 'Gabriel Pereira', label: 'Gabriel Pereira (GP)' }, { value: 'Mousinho da Silveira', label: 'Mousinho da Silveira (MS)' }]} />
-      <Select id={`${id}-sex`} label={L('Sex', 'الجنس')} value={p.sex} onChange={(v) => set({ ...p, sex: v })} options={[{ value: 'Female', label: L('Female', 'أنثى') }, { value: 'Male', label: L('Male', 'ذكر') }]} />
-      <Select id={`${id}-higher`} label={lab('higher')} value={p.higher} onChange={(v) => set({ ...p, higher: v })} options={yn} />
-      <Select id={`${id}-sup`} label={lab('schoolsup')} value={p.schoolsup} onChange={(v) => set({ ...p, schoolsup: v })} options={yn} />
-      <Select id={`${id}-net`} label={lab('internet')} value={p.internet} onChange={(v) => set({ ...p, internet: v })} options={yn} />
+      <Slider
+        label={lab('failures')}
+        value={p.failures}
+        min={0}
+        max={3}
+        step={1}
+        onChange={(v) => set({ ...p, failures: v })}
+      />
+      <Slider
+        label={lab('absences')}
+        value={p.absences}
+        min={0}
+        max={32}
+        step={1}
+        onChange={(v) => set({ ...p, absences: v })}
+      />
+      <Select
+        id={`${id}-study`}
+        label={lab('studytime')}
+        value={String(p.studytime)}
+        onChange={(v) => set({ ...p, studytime: Number(v) })}
+        options={[
+          ['1', L('< 2 h', 'أقل من ساعتين')],
+          ['2', L('2–5 h', '2–5 ساعات')],
+          ['3', L('5–10 h', '5–10 ساعات')],
+          ['4', L('> 10 h', 'أكثر من 10 ساعات')],
+        ].map(([value, label]) => ({ value, label }))}
+      />
+      <Select
+        id={`${id}-medu`}
+        label={lab('Medu')}
+        value={String(p.Medu)}
+        onChange={(v) => set({ ...p, Medu: Number(v) })}
+        options={[
+          ['0', L('None', 'بلا تعليم')],
+          ['1', L('Primary (4th)', 'ابتدائي')],
+          ['2', L('5th–9th grade', 'الخامس–التاسع')],
+          ['3', L('Secondary', 'ثانوي')],
+          ['4', L('Higher', 'جامعي')],
+        ].map(([value, label]) => ({ value, label }))}
+      />
+      <Select
+        id={`${id}-dalc`}
+        label={lab('Dalc')}
+        value={String(p.Dalc)}
+        onChange={(v) => set({ ...p, Dalc: Number(v) })}
+        options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: String(n) }))}
+      />
+      <Select
+        id={`${id}-school`}
+        label={L('School', 'المدرسة')}
+        value={p.school}
+        onChange={(v) => set({ ...p, school: v })}
+        options={[
+          { value: 'Gabriel Pereira', label: 'Gabriel Pereira (GP)' },
+          { value: 'Mousinho da Silveira', label: 'Mousinho da Silveira (MS)' },
+        ]}
+      />
+      <Select
+        id={`${id}-sex`}
+        label={L('Sex', 'الجنس')}
+        value={p.sex}
+        onChange={(v) => set({ ...p, sex: v })}
+        options={[
+          { value: 'Female', label: L('Female', 'أنثى') },
+          { value: 'Male', label: L('Male', 'ذكر') },
+        ]}
+      />
+      <Select
+        id={`${id}-higher`}
+        label={lab('higher')}
+        value={p.higher}
+        onChange={(v) => set({ ...p, higher: v })}
+        options={yn}
+      />
+      <Select
+        id={`${id}-sup`}
+        label={lab('schoolsup')}
+        value={p.schoolsup}
+        onChange={(v) => set({ ...p, schoolsup: v })}
+        options={yn}
+      />
+      <Select
+        id={`${id}-net`}
+        label={lab('internet')}
+        value={p.internet}
+        onChange={(v) => set({ ...p, internet: v })}
+        options={yn}
+      />
     </div>
   );
 }
@@ -94,13 +231,23 @@ function Result({ p, L, name }: { p: Profile; L: Lfn; name: string }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-soft p-3">
           <div className="text-xs text-muted">{L('Predicted final grade', 'العلامة النهائية المتوقعة')}</div>
-          <div className="mono text-2xl font-bold">{fmt(r.g3Clamped, 1)}<span className="text-sm text-muted"> / 20</span></div>
-          <div className="mono text-xs text-muted" dir="ltr">± {fmt(A.lm_multi.sigma, 1)}</div>
+          <div className="mono text-2xl font-bold">
+            {fmt(r.g3Clamped, 1)}
+            <span className="text-sm text-muted"> / 20</span>
+          </div>
+          <div className="mono text-xs text-muted" dir="ltr">
+            ± {fmt(A.lm_multi.sigma, 1)}
+          </div>
         </div>
         <div className="rounded-lg bg-soft p-3">
           <div className="text-xs text-muted">{L('Probability of passing', 'احتمال النجاح')}</div>
           <div className="mono text-2xl font-bold">{pct(r.prob, 0)}</div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-teal transition-all" style={{ width: `${r.prob * 100}%` }} /></div>
+          <div className="mt-1 h-2 overflow-hidden rounded-full bg-line">
+            <div
+              className="h-full rounded-full bg-teal transition-all"
+              style={{ width: `${r.prob * 100}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -146,10 +293,26 @@ export default function Predict() {
           )}
         </p>
         <div className="mt-3 flex gap-2">
-          <button type="button" className="chip hover:text-ink" onClick={() => setB(a)}>{L('Copy A → B', 'نسخ أ ← ب')}</button>
-          <button type="button" className="chip hover:text-ink" onClick={() => { setA(DEFAULT_A); setB(DEFAULT_B); }}>{L('Reset', 'إعادة الضبط')}</button>
+          <button type="button" className="chip hover:text-ink" onClick={() => setB(a)}>
+            {L('Copy A → B', 'نسخ أ ← ب')}
+          </button>
+          <button
+            type="button"
+            className="chip hover:text-ink"
+            onClick={() => {
+              setA(DEFAULT_A);
+              setB(DEFAULT_B);
+            }}
+          >
+            {L('Reset', 'إعادة الضبط')}
+          </button>
         </div>
-        <p className="mt-4 text-xs text-muted">{L('Risk label from P(pass): High risk below 60%, Watch 60–80%, On track above 80%.', 'تصنيف الخطر من P(النجاح): خطر مرتفع تحت 60%، تحت المراقبة 60–80%، على المسار الصحيح فوق 80%.')}</p>
+        <p className="mt-4 text-xs text-muted">
+          {L(
+            'Risk label from P(pass): High risk below 60%, Watch 60–80%, On track above 80%.',
+            'تصنيف الخطر من P(النجاح): خطر مرتفع تحت 60%، تحت المراقبة 60–80%، على المسار الصحيح فوق 80%.',
+          )}
+        </p>
       </div>
       <div className="mt-6">
         <Caveat>

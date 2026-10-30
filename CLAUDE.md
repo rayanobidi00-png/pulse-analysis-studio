@@ -18,7 +18,7 @@ Read these first, in order: `docs/SPEC.md` (what to build), `docs/PHASES.md` (th
 
 ## Stack (decided; do not swap without a strong reason logged in DECISIONS.md)
 - Vite + React 18 + TypeScript (strict), Tailwind CSS, React Router (hash routing so GitHub Pages works).
-- Data layer (like Faisal Garage): **Supabase** (Postgres + Row Level Security) read with `@supabase/supabase-js` when `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are set; otherwise the bundled CSV. Schema in `supabase/migrations/`, load with `npm run db:push`. No SQLite. The cleaning pipeline runs in TypeScript (`src/data/clean.ts`) and builds `students_clean` (43 columns).
+- Data layer: the bundled `data/student-por.csv`, parsed in TypeScript (`src/data/parse.ts`); the cleaning pipeline (`src/data/clean.ts`) builds `students_clean` (43 columns). No database: the site is a university demo that must work offline.
 - Statistics: own TypeScript module `src/stats/` (t-tests, chi-square, ANOVA, Tukey, OLS, logistic IRLS, correlation, quantiles) using `jstat` only for distribution functions (t, F, chi-square, normal, studentized range).
 - Real R in the browser: **WebR** (`webr` npm package) on the "Run it in R" page, executing `data/pulse_analysis.R` section by section and showing console output and plots. Lazy-load it; the rest of the site must not wait for it.
 - Charts: D3 (scales, shapes) rendered as React SVG components, so every chart is custom, themeable and exportable.

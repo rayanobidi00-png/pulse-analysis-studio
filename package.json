@@ -9,15 +9,14 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "verify": "tsx scripts/verify.ts",
-    "db:push": "node supabase/push.mjs"
+    "verify": "tsx scripts/verify.ts"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/source-serif-4": "5.3.1",
     "@fontsource/ibm-plex-sans": "5.3.0",
     "@fontsource/ibm-plex-sans-arabic": "5.3.0",
     "@fontsource/jetbrains-mono": "5.3.0",
-    "@supabase/supabase-js": "2.118.0",
     "d3-array": "3.2.4",
     "d3-scale": "4.0.2",
     "d3-shape": "3.2.0",
@@ -39,7 +38,6 @@
     "autoprefixer": "10.4.20",
     "eslint": "9.17.0",
     "eslint-plugin-react-hooks": "5.1.0",
-    "pg": "8.13.1",
     "postcss": "8.4.49",
     "prettier": "3.4.2",
     "tailwindcss": "3.4.17",

@@ -8,7 +8,7 @@ export const TEAM = {
   ],
   instructor: 'Dr. [name]',
   course: { en: 'Data Science Programming (R)', ar: 'برمجة علم البيانات (R)' },
-  university: { en: '', ar: '' },
+  university: { en: 'Applied Science Private University', ar: 'جامعة العلوم التطبيقية الخاصة' },
   semester: '',
   links: {
     slides: '',

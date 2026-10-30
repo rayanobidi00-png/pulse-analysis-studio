@@ -21,7 +21,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-/** The CSV text the analysis runs on (from Supabase or the bundled file). */
+/** The CSV text the analysis runs on. */
 export function csvText(): string {
   return dataset().csv;
 }

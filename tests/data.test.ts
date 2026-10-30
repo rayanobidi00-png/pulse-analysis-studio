@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { COLUMNS, rClass } from '../src/content/columns';
-import { computeAll } from '../src/analysis/compute';
-import { rowsToCsv } from '../src/data/backend';
-import { COLUMN_NAMES, INTEGER_COLUMNS, parseCsv } from '../src/data/parse';
-import { A, R, csv } from './helpers';
+import { A, R } from './helpers';
 
 describe('column dictionary', () => {
   it('matches the R types table (class and statistical type)', () => {
@@ -21,23 +17,8 @@ describe('column dictionary', () => {
   });
 });
 
-describe('Supabase backend', () => {
-  it('rows from Postgres round-trip to the same CSV the analysis reads', () => {
-    const parsed = parseCsv(csv);
-    const back = parseCsv(rowsToCsv(parsed.rows));
-    expect(back.header).toEqual(parsed.header);
-    expect(back.rows).toEqual(parsed.rows);
-    expect(computeAll(rowsToCsv(parsed.rows)).desc).toEqual(A.desc);
-  });
-  it('the migration creates every column with the right type', () => {
-    const sql = readFileSync('supabase/migrations/20261030000000_pulse_schema.sql', 'utf8');
-    for (const c of COLUMN_NAMES) {
-      const type = (INTEGER_COLUMNS as readonly string[]).includes(c) ? 'smallint' : 'text';
-      expect(sql).toContain(`"${c}" ${type} not null`);
-    }
-    expect(sql).toMatch(/enable row level security/);
-  });
-  it('the clean table has 43 columns', () => {
+describe('clean table', () => {
+  it('has 43 columns and the R pass count', () => {
     expect(Object.keys(A.clean[0]).length).toBe(43);
     expect(A.clean.filter((s) => s.pass === 'Pass').length).toBe(R.pass_counts.Pass);
   });

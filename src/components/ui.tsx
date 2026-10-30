@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLang } from '../i18n/lang';
 import { highlight } from '../lib/highlight';
 import { STAGES } from '../content/stages';
@@ -17,65 +17,33 @@ export function PageHeader({
   lead: string;
 }) {
   const { L } = useLang();
-  const prev = step ? STAGES[step - 2] : undefined;
-  const next = step ? STAGES[step] : undefined;
   return (
-    <header className="hero-banner mb-8">
-      <div className="relative z-10 px-6 py-7 sm:px-9 sm:py-9">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <nav
-            aria-label={L('Breadcrumb', 'مسار الصفحة')}
-            className="flex flex-wrap items-center gap-2 text-[12.5px] text-[#98a3ba]"
-          >
-            <Link to="/" className="hover:text-white">
-              {L('Dashboard', 'لوحة التحكم')}
-            </Link>
-            <span aria-hidden>/</span>
-            {step !== undefined ? (
-              <span className="mono rounded-full bg-[#2ec4ae] px-2.5 py-0.5 text-[11px] font-bold tracking-[0.08em] text-[#05201b] ltr">
-                {L('STAGE', 'المرحلة')} {String(step).padStart(2, '0')}/08
-              </span>
-            ) : null}
-            <span className="font-medium text-[#c9d2e3]">{eyebrow}</span>
-          </nav>
-          {step !== undefined && (
-            <div className="no-print flex items-center gap-2">
-              {prev && (
-                <Link
-                  to={prev.path}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 text-[13px] font-semibold text-[#c9d2e3] hover:bg-white/10"
-                >
-                  <Icon name="back" className="h-3.5 w-3.5" />
-                  {L(prev.en, prev.ar)}
-                </Link>
-              )}
-              {next && (
-                <Link
-                  to={next.path}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3 text-[13px] font-semibold text-white hover:bg-white/20"
-                >
-                  {L(next.en, next.ar)}
-                  <Icon name="arrow" className="h-3.5 w-3.5" />
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-        <h1 className="mt-5 max-w-4xl text-[30px] font-extrabold leading-[1.06] tracking-[-0.03em] text-white sm:text-[44px]">
-          {title}
-        </h1>
-        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-[#b8c2d6] sm:text-[16.5px]">{lead}</p>
+    <header className="mb-12">
+      <nav
+        aria-label={L('Breadcrumb', 'مسار الصفحة')}
+        className="flex flex-wrap items-center gap-2 text-[13px] text-muted"
+      >
+        <Link to="/" className="hover:text-ink hover:underline">
+          {L('Overview', 'نظرة عامة')}
+        </Link>
+        <span aria-hidden>/</span>
         {step !== undefined && (
-          <div className="mt-6 flex gap-1.5" aria-hidden>
-            {STAGES.map((s, i) => (
-              <span
-                key={s.path}
-                className={`h-1.5 flex-1 rounded-full ${i + 1 < step ? 'bg-[#2ec4ae]/50' : i + 1 === step ? 'bg-[#2ec4ae]' : 'bg-white/10'}`}
-              />
-            ))}
-          </div>
+          <>
+            <span>{L('Analysis', 'التحليل')}</span>
+            <span aria-hidden>/</span>
+          </>
         )}
-      </div>
+        <span className="text-ink">{eyebrow}</span>
+      </nav>
+      {step !== undefined && (
+        <p className="eyebrow mt-8">{L(`Chapter ${step} of 8`, `الفصل ${step} من 8`)}</p>
+      )}
+      <h1
+        className={`${step !== undefined ? 'mt-2' : 'mt-8'} max-w-4xl text-[34px] leading-[1.12] sm:text-[46px]`}
+      >
+        {title}
+      </h1>
+      <p className="lede mt-4 max-w-3xl">{lead}</p>
     </header>
   );
 }
@@ -93,15 +61,8 @@ export function Section({
 }) {
   return (
     <section id={id} className="section-block">
-      <div className="flex items-start gap-3">
-        <span aria-hidden className="mt-2.5 h-5 w-1.5 shrink-0 rounded-full bg-teal" />
-        <div className="min-w-0">
-          <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">
-            {title}
-          </h2>
-          {lead && <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-muted">{lead}</p>}
-        </div>
-      </div>
+      <h2 className="text-[26px] leading-tight sm:text-[30px]">{title}</h2>
+      {lead && <p className="mt-2 max-w-3xl text-[15.5px] leading-relaxed text-muted">{lead}</p>}
       <div className="mt-6">{children}</div>
     </section>
   );
@@ -118,20 +79,16 @@ export function Kpi({
 }) {
   const color = tone === 'teal' ? 'text-teal' : tone === 'coral' ? 'text-coral' : 'text-ink';
   return (
-    <div className="bg-surface px-5 py-4">
-      <b
-        className={`block font-display text-[28px] font-extrabold leading-none tracking-[-0.03em] num sm:text-[34px] ${color}`}
-      >
-        {value}
-      </b>
-      <span className="mt-1.5 block text-xs text-muted sm:text-[13px]">{label}</span>
+    <div className="bg-surface px-5 py-5">
+      <b className={`stat-big block text-[30px] sm:text-[36px] ${color}`}>{value}</b>
+      <span className="mt-2 block text-[13px] text-muted">{label}</span>
     </div>
   );
 }
 
 export function KpiStrip({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-card sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
       {children}
     </div>
   );
@@ -149,7 +106,7 @@ export function CodeTabs({ tabs, initial = 0 }: { tabs: CodeTab[]; initial?: num
   const { L } = useLang();
   const tab = tabs[i];
   return (
-    <div className="min-w-0 overflow-hidden rounded-xl border border-line" dir="ltr">
+    <div className="min-w-0 overflow-hidden rounded-md border border-line" dir="ltr">
       <div className="flex items-center gap-1 bg-code px-2 pt-2">
         <div role="tablist" className="flex items-center gap-1">
           {tabs.map((t, k) => (
@@ -189,29 +146,42 @@ export function CodeTabs({ tabs, initial = 0 }: { tabs: CodeTab[]; initial?: num
 }
 
 export function NextStep({ to, label }: { to: string; label: string }) {
-  const { L, dir } = useLang();
+  const { L } = useLang();
+  const { pathname } = useLocation();
+  const i = STAGES.findIndex((st) => st.path === pathname);
+  const prev = i > 0 ? STAGES[i - 1] : undefined;
   return (
-    <div className="no-print mt-16">
+    <nav
+      aria-label={L('Chapters', 'الفصول')}
+      className="no-print mt-20 grid gap-4 border-t border-line pt-8 sm:grid-cols-2"
+    >
+      {prev ? (
+        <Link
+          to={prev.path}
+          className="group rounded-card border border-line p-5 hover:border-[color-mix(in_srgb,var(--ink)_35%,var(--line))]"
+        >
+          <span className="flex items-center gap-1.5 text-[13px] text-muted">
+            <Icon name="back" className="h-3.5 w-3.5" />
+            {L('Previous chapter', 'الفصل السابق')}
+          </span>
+          <span className="serif mt-1 block text-[22px] font-semibold group-hover:underline">
+            {L(prev.en, prev.ar)}
+          </span>
+        </Link>
+      ) : (
+        <span />
+      )}
       <Link
         to={to}
-        className="group flex items-center justify-between gap-6 overflow-hidden rounded-2xl bg-[var(--navy)] px-6 py-6 text-white shadow-[0_20px_50px_-20px_rgba(11,18,34,.6)] transition-transform hover:-translate-y-0.5 sm:px-8"
+        className="group rounded-card border border-line p-5 text-end hover:border-[color-mix(in_srgb,var(--ink)_35%,var(--line))]"
       >
-        <span>
-          <span className="mono block text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#2ec4ae]">
-            {L('Next step', 'الخطوة التالية')}
-          </span>
-          <span className="mt-1 block font-display text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]">
-            {label}
-          </span>
+        <span className="flex items-center justify-end gap-1.5 text-[13px] text-muted">
+          {L('Next chapter', 'الفصل التالي')}
+          <Icon name="arrow" className="h-3.5 w-3.5" />
         </span>
-        <span
-          aria-hidden
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#2ec4ae] text-xl text-[#06201c] transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
-        >
-          {dir === 'rtl' ? '←' : '→'}
-        </span>
+        <span className="serif mt-1 block text-[22px] font-semibold group-hover:underline">{label}</span>
       </Link>
-    </div>
+    </nav>
   );
 }
 
@@ -302,7 +272,7 @@ export function Toggle({
 export function Verdict({ significant, children }: { significant: boolean; children: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${significant ? 'bg-tint text-teal' : 'bg-soft text-muted'}`}
+      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-semibold ${significant ? 'bg-tint text-teal' : 'bg-soft text-muted'}`}
     >
       <span aria-hidden>{significant ? '●' : '○'}</span>
       {children}
@@ -313,11 +283,8 @@ export function Verdict({ significant, children }: { significant: boolean; child
 export function Interp({ children }: { children: ReactNode }) {
   const { L } = useLang();
   return (
-    <div className="rounded-xl border border-[color-mix(in_srgb,var(--teal)_25%,var(--line))] bg-tint px-5 py-4 text-[14.5px] leading-relaxed">
-      <span className="eyebrow mb-1.5 flex items-center gap-2">
-        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-teal" />
-        {L('Interpretation', 'التفسير')}
-      </span>
+    <div className="border-s-[3px] border-teal bg-band px-5 py-4 text-[15px] leading-relaxed">
+      <p className="mb-1 text-[13px] font-semibold text-teal">{L('Interpretation', 'التفسير')}</p>
       {children}
     </div>
   );
@@ -326,10 +293,8 @@ export function Interp({ children }: { children: ReactNode }) {
 export function Caveat({ children }: { children: ReactNode }) {
   const { L } = useLang();
   return (
-    <div className="rounded-xl border border-[color-mix(in_srgb,var(--amber)_35%,var(--line))] bg-[color-mix(in_srgb,var(--amber)_8%,var(--surface))] px-5 py-4 text-[14.5px] leading-relaxed">
-      <span className="mb-1.5 flex items-center gap-2 text-[11.5px] font-bold uppercase tracking-[0.12em] text-amber">
-        {L('Be careful', 'تنبيه')}
-      </span>
+    <div className="border-s-[3px] border-amber bg-[color-mix(in_srgb,var(--amber)_7%,var(--paper))] px-5 py-4 text-[15px] leading-relaxed">
+      <p className="mb-1 text-[13px] font-semibold text-amber">{L('Be careful', 'تنبيه')}</p>
       {children}
     </div>
   );
@@ -372,9 +337,9 @@ export function SimpleTable({
 
 export function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-soft px-3.5 py-2.5">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">{label}</div>
-      <div className="mono num mt-0.5 text-[19px] font-semibold ltr">{value}</div>
+    <div className="rounded-md border border-line bg-surface px-3.5 py-2.5">
+      <div className="text-[12px] font-medium text-muted">{label}</div>
+      <div className="mono num mt-0.5 text-[18px] font-semibold ltr">{value}</div>
       {sub && <div className="text-xs text-muted">{sub}</div>}
     </div>
   );

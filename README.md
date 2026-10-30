@@ -47,19 +47,13 @@ npm run verify     # data contract + no hard-coded statistics
 npm run build      # production build in dist/
 ```
 
-Node 20 or newer. The CSV is bundled, so the site works offline (with Supabase configured it reads the `students` table and falls back to the bundled file) after the first visit (a service worker caches it). Only the `#/r` page downloads webR and its packages from `webr.r-wasm.org`.
+Node 20 or newer. The CSV is bundled, so the site works offline after the first visit (a service worker caches it). Only the `#/r` page downloads webR and its packages from `webr.r-wasm.org`.
 
 ## Stack
 
-Vite · React 18 · TypeScript (strict) · Tailwind CSS · React Router (hash) · Supabase (Postgres, RLS, supabase-js) · jStat (distribution functions) · D3 scales and shapes · webR · Vitest · GitHub Pages (and optionally Cloudflare Pages) via GitHub Actions. Design decisions are logged in [`docs/DECISIONS.md`](docs/DECISIONS.md); the build log is in [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Vite · React 18 · TypeScript (strict) · Tailwind CSS · React Router (hash) · jStat (distribution functions) · D3 scales and shapes · webR · Vitest · GitHub Pages via GitHub Actions. Design decisions are logged in [`docs/DECISIONS.md`](docs/DECISIONS.md); the build log is in [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Data
 
 P. Cortez and A. Silva. *Using Data Mining to Predict Secondary School Student Performance.* Proceedings of 5th FUBUTEC 2008, pp. 5–12, Porto, Portugal. UCI Machine Learning Repository, Student Performance, CC BY 4.0.
 
-## Supabase (optional, like Faisal Garage)
-
-1. Create a free project at supabase.com.
-2. Copy `.env.example` to `.env.local` and fill in the project URL, the publishable (anon) key and the database connection string.
-3. `npm run db:push` creates the `students` and `analysis_requests` tables with Row Level Security and loads the 649 rows.
-4. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as GitHub repository secrets. The next deploy reads the data from Postgres and saves every Ask PULSE request to the shared log. Without them the site uses the bundled CSV; every number is identical.

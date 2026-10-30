@@ -115,7 +115,7 @@ const KW: Record<string, string[]> = {
   clean: ['clean', 'cleaning', 'preprocess', 'نظف', 'نظّف', 'تنظيف', 'التنظيف'],
   missing: ['missing', ' na ', 'null', 'ناقصة', 'الناقصة', 'مفقودة', 'المفقودة', 'نواقص'],
   duplicates: ['duplicate', 'duplicates', 'duplicated', 'مكرر', 'مكررة', 'المكررة', 'المكرر', 'التكرار في الصفوف'],
-  outliers: ['outlier', 'outliers', 'extreme', 'شاذ', 'شاذة', 'الشاذة', 'متطرفة'],
+  outliers: ['outlier', 'outliers', 'extreme', 'شاذ', 'شاذة', 'المتطرفة', 'متطرفة'],
   histogram: ['histogram', 'distribution', 'هيستوغرام', 'هستوغرام', 'هيستوجرام', 'مدرج', 'توزيع'],
   boxplot: ['box plot', 'boxplot', 'box-plot', 'box', 'بوكس', 'صندوق', 'الصندوق'],
   pie: ['pie', 'دائري', 'دائرة', 'باي', 'كعكة'],
@@ -279,24 +279,24 @@ const bi = (en: string, ar: string): Bi => ({ en, ar });
 
 export const EXAMPLES: Bi[] = [
   bi('Clean the data', 'نظّف البيانات'),
-  bi('Are there missing values?', 'في قيم ناقصة؟'),
-  bi('Outliers in absences', 'القيم الشاذة في الغياب'),
+  bi('Are there missing values?', 'هل توجد قيم مفقودة؟'),
+  bi('Outliers in absences', 'القيم المتطرفة في الغياب'),
   bi('Describe the final grade', 'وصف العلامة النهائية'),
-  bi('Histogram of absences', 'ارسم هيستوغرام للغياب'),
-  bi('Box plot of final grade by study time', 'بوكس بلوت للعلامة حسب ساعات الدراسة'),
+  bi('Histogram of absences', 'مدرج تكراري للغياب'),
+  bi('Box plot of final grade by study time', 'مخطط صندوقي للعلامة حسب ساعات الدراسة'),
   bi('Pie chart of mother\'s job', 'رسم دائري لوظيفة الأم'),
   bi('Scatter of G2 and G3', 'رسم انتشار بين G2 و G3'),
-  bi('Does sex affect the final grade?', 'هل الجنس بأثر على العلامة؟'),
+  bi('Does sex affect the final grade?', 'هل يؤثر الجنس على العلامة؟'),
   bi('Compare final grade by school', 'قارن العلامة حسب المدرسة'),
   bi('Is higher education related to passing?', 'هل الجامعة مرتبطة بالنجاح؟'),
   bi('Correlation between failures and final grade', 'الارتباط بين الرسوب السابق والعلامة'),
   bi('Pass rate by school', 'نسبة النجاح حسب المدرسة'),
   bi('How many girls failed?', 'كم بنت رسبت؟'),
-  bi('Average final grade of boys', 'متوسط علامة الشباب'),
+  bi('Average final grade of boys', 'متوسط علامة الذكور'),
   bi('Is the mean final grade higher than 10?', 'هل متوسط العلامة أعلى من 10؟'),
   bi('Did grades improve from G1 to G3?', 'هل تحسنت العلامات من G1 إلى G3؟'),
   bi('Regression of G3 on G2 and failures', 'انحدار العلامة على G2 والرسوب السابق'),
-  bi('Top 10 absences', 'أعلى 10 بالغياب'),
+  bi('Top 10 absences', 'أعلى 10 في الغياب'),
 ];
 
 export function answer(rows: readonly Student[], p: Parsed): Answer {
@@ -304,17 +304,17 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
   const scope = applyFilters(rows, p.filters);
   const ft = filterText(p.filters);
   const scopeNote: Bi = p.filters.length ? bi(` (${ft.en}, n = ${scope.length})`, ` (${ft.ar}، n = ${scope.length})`) : bi('', '');
-  const fail = (en: string, ar: string): Answer => ({ ...base, ok: false, title: bi('I need a bit more detail', 'محتاج توضيح بسيط'), summary: bi(en, ar) });
-  if (p.filters.length && scope.length === 0) return fail('No students match that filter.', 'ما في طلاب بيطابقوا هالشرط.');
+  const fail = (en: string, ar: string): Answer => ({ ...base, ok: false, title: bi('I need a bit more detail', 'الطلب يحتاج إلى توضيح'), summary: bi(en, ar) });
+  if (p.filters.length && scope.length === 0) return fail('No students match that filter.', 'لا يوجد طلاب يطابقون هذا الشرط.');
 
   switch (p.intent) {
     case 'help':
       return {
         ...base,
-        title: bi('What I can do', 'شو بقدر أعمل'),
+        title: bi('What I can do', 'ما الذي يمكنك طلبه'),
         summary: bi(
           'Ask me in English or Arabic. I can clean and check the data, describe any column, draw histograms, box plots, bar, pie and scatter charts, run t-tests, chi-square, ANOVA, correlation and regression, count and average with filters (girls, boys, GP, MS, passed, failed).',
-          'اسألني بالعربي أو بالإنجليزي. بقدر أنظّف البيانات وأفحصها، أوصف أي عمود، أرسم هيستوغرام وبوكس بلوت وأعمدة ودائري وانتشار، أعمل اختبار t وكاي تربيع وANOVA وارتباط وانحدار، أحسب عدد ومتوسط مع شروط (بنات، شباب، GP، MS، ناجحين، راسبين).',
+          'اكتب طلبك بالعربية أو الإنجليزية. يمكن تنظيف البيانات وفحصها، ووصف أي عمود، ورسم مدرج تكراري ومخطط صندوقي وأعمدة ودائري وانتشار، وإجراء اختبار t ومربع كاي وANOVA والارتباط والانحدار، وحساب الأعداد والمتوسطات مع شروط (بنات، شباب، GP، MS، ناجحين، راسبين).',
         ),
       };
 
@@ -323,11 +323,11 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       const total = na.reduce((s, [, n]) => s + n, 0);
       return {
         ...base,
-        title: bi('Missing values', 'القيم الناقصة'),
+        title: bi('Missing values', 'القيم المفقودة'),
         summary: total === 0
-          ? bi(`No missing values in any of the ${COLUMN_NAMES.length} columns (${rows.length} rows). Nothing to impute or remove.`, `ما في ولا قيمة ناقصة بأي عمود من الـ ${COLUMN_NAMES.length} عمود (${rows.length} صف). ما في داعي نعوّض أو نحذف.`)
-          : bi(`${total} missing values found.`, `في ${total} قيمة ناقصة.`),
-        stats: [{ label: bi('Rows', 'الصفوف'), value: String(rows.length) }, { label: bi('Columns', 'الأعمدة'), value: String(COLUMN_NAMES.length) }, { label: bi('Missing', 'ناقصة'), value: String(total) }],
+          ? bi(`No missing values in any of the ${COLUMN_NAMES.length} columns (${rows.length} rows). Nothing to impute or remove.`, `لا توجد أي قيمة مفقودة في الأعمدة الـ ${COLUMN_NAMES.length} (${rows.length} صفًا)، فلا حاجة إلى التعويض أو الحذف.`)
+          : bi(`${total} missing values found.`, `توجد ${total} قيمة مفقودة.`),
+        stats: [{ label: bi('Rows', 'الصفوف'), value: String(rows.length) }, { label: bi('Columns', 'الأعمدة'), value: String(COLUMN_NAMES.length) }, { label: bi('Missing', 'مفقودة'), value: String(total) }],
         table: { head: ['column', 'NA'], rows: na },
         r: 'colSums(is.na(df))\nsum(is.na(df))',
       };
@@ -339,7 +339,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       return {
         ...base,
         title: bi('Duplicate rows', 'الصفوف المكررة'),
-        summary: bi(`${dup} duplicated rows out of ${rows.length}: every student is a distinct record.`, `${dup} صف مكرر من أصل ${rows.length}: كل طالب سجل مستقل.`),
+        summary: bi(`${dup} duplicated rows out of ${rows.length}: every student is a distinct record.`, `${dup} صفوف مكررة من أصل ${rows.length}: كل طالب سجل مستقل.`),
         stats: [{ label: bi('Duplicates', 'مكرر'), value: String(dup) }],
         r: 'sum(duplicated(df))',
       };
@@ -354,12 +354,12 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       const L = varLabel(v);
       return {
         ...base,
-        title: bi(`Outliers in ${L.en}`, `القيم الشاذة في ${L.ar}`),
+        title: bi(`Outliers in ${L.en}`, `القيم المتطرفة في ${L.ar}`),
         summary: bi(
           `IQR rule: Q1 = ${fmt(q1)}, Q3 = ${fmt(q3)}, IQR = ${fmt(q)}, so the fences are ${fmt(lo)} and ${fmt(hi)}. ${out.length} of ${x.length} values fall outside${scopeNote.en}.`,
-          `قاعدة IQR: Q1 = ${fmt(q1)}، Q3 = ${fmt(q3)}، IQR = ${fmt(q)}، فالحدود ${fmt(lo)} و ${fmt(hi)}. ${out.length} قيمة من ${x.length} برا الحدود${scopeNote.ar}.`,
+          `قاعدة IQR: Q1 = ${fmt(q1)}، Q3 = ${fmt(q3)}، IQR = ${fmt(q)}، فالحدود ${fmt(lo)} و ${fmt(hi)}. ${out.length} قيمة من ${x.length} خارج الحدود${scopeNote.ar}.`,
         ),
-        stats: [{ label: bi('Lower fence', 'الحد الأدنى'), value: fmt(lo) }, { label: bi('Upper fence', 'الحد الأعلى'), value: fmt(hi) }, { label: bi('Outliers', 'الشاذة'), value: String(out.length) }],
+        stats: [{ label: bi('Lower fence', 'الحد الأدنى'), value: fmt(lo) }, { label: bi('Upper fence', 'الحد الأعلى'), value: fmt(hi) }, { label: bi('Outliers', 'المتطرفة'), value: String(out.length) }],
         chart: { kind: 'box', groups: [{ label: L.en, values: x }], xLabel: '', yLabel: v },
         r: `x <- ${rFilter(p.filters)}$${v}\nfence <- quantile(x, .75) + 1.5 * IQR(x)\nsum(x > fence | x < quantile(x, .25) - 1.5 * IQR(x))\nboxplot(x)`,
       };
@@ -377,7 +377,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi('Cleaning run: 4 checks', 'تنظيف البيانات: 4 فحوصات'),
         summary: bi(
           `Done. ${rows.length} rows × ${COLUMN_NAMES.length} columns. 0 missing values, ${dup} duplicates, ${zero} students with a final grade of 0 (kept as real fails), ${outN} absence outliers above ${fmt(fence)} (kept as real behaviour). No rows were removed.`,
-          `خلصت. ${rows.length} صف × ${COLUMN_NAMES.length} عمود. 0 قيم ناقصة، ${dup} صفوف مكررة، ${zero} طالب علامتهم النهائية صفر (خليناهم لأنهم رسوب حقيقي)، ${outN} قيمة شاذة بالغياب فوق ${fmt(fence)} (خليناهم لأنهم سلوك حقيقي). ما انحذف ولا صف.`,
+          `اكتمل الفحص. ${rows.length} صف × ${COLUMN_NAMES.length} عمود. 0 قيم مفقودة، و${dup} صفوف مكررة، و${zero} طالبًا علامتهم النهائية صفر (أبقيناهم لأنهم رسوب حقيقي)، و${outN} قيمة متطرفة في الغياب فوق ${fmt(fence)} (أبقيناها لأنها سلوك حقيقي). لم يُحذف أي صف.`,
         ),
         table: {
           head: ['check', 'result', 'decision'],
@@ -401,7 +401,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         const d = describe(x);
         return {
           ...base,
-          title: bi(`${p.intent === 'histogram' ? 'Histogram' : 'Summary'} of ${L.en}${scopeNote.en}`, `${p.intent === 'histogram' ? 'هيستوغرام' : 'وصف'} ${L.ar}${scopeNote.ar}`),
+          title: bi(`${p.intent === 'histogram' ? 'Histogram' : 'Summary'} of ${L.en}${scopeNote.en}`, `${p.intent === 'histogram' ? 'مدرج تكراري:' : 'وصف:'} ${L.ar}${scopeNote.ar}`),
           summary: bi(
             `Mean ${fmt(d.mean)}, median ${fmt(d.median)}, mode ${fmt(d.mode, 0)}, SD ${fmt(d.sd)}, range ${fmt(d.min, 0)}–${fmt(d.max, 0)} (n = ${x.length}). ${d.mean > d.median + 0.2 ? 'The mean is above the median, so the distribution is right-skewed.' : d.mean < d.median - 0.2 ? 'The mean is below the median, so the distribution is left-skewed.' : 'Mean and median are close: roughly symmetric.'}`,
             `المتوسط ${fmt(d.mean)}، الوسيط ${fmt(d.median)}، المنوال ${fmt(d.mode, 0)}، الانحراف المعياري ${fmt(d.sd)}، المدى ${fmt(d.min, 0)}–${fmt(d.max, 0)} (n = ${x.length}). ${d.mean > d.median + 0.2 ? 'المتوسط أكبر من الوسيط، يعني التوزيع ملتوي لليمين.' : d.mean < d.median - 0.2 ? 'المتوسط أقل من الوسيط، يعني التوزيع ملتوي لليسار.' : 'المتوسط والوسيط قريبين: التوزيع تقريبًا متماثل.'}`,
@@ -450,7 +450,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       const top = [...f].sort((a, b) => b.n - a.n)[0];
       return {
         ...base,
-        title: bi(`${p.intent === 'pie' ? 'Pie chart' : 'Bar chart'} of ${L.en}${scopeNote.en}`, `${p.intent === 'pie' ? 'رسم دائري' : 'رسم أعمدة'} لـ ${L.ar}${scopeNote.ar}`),
+        title: bi(`${p.intent === 'pie' ? 'Pie chart' : 'Bar chart'} of ${L.en}${scopeNote.en}`, `${p.intent === 'pie' ? 'مخطط دائري' : 'مخطط أعمدة'}: ${L.ar}${scopeNote.ar}`),
         summary: bi(`Largest group: "${top.level}" (${top.n}, ${pct(top.pct / 100)}).`, `أكبر فئة: «${top.level}» (${top.n}، ${pct(top.pct / 100)}).`),
         table: { head: ['level', 'n', '%'], rows: f.map((r) => [r.level, r.n, fmt(r.pct)]) },
         chart: p.intent === 'pie' ? { kind: 'pie', slices: f.map((r) => ({ label: r.level, value: r.n })) } : { kind: 'bar', bars: f.map((r) => ({ label: r.level, value: r.n })), yLabel: 'students' },
@@ -468,7 +468,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         const x = numCol(scope, yy);
         return {
           ...base,
-          title: bi(`Box plot of ${Y.en}${scopeNote.en}`, `بوكس بلوت لـ ${Y.ar}${scopeNote.ar}`),
+          title: bi(`Box plot of ${Y.en}${scopeNote.en}`, `مخطط صندوقي: ${Y.ar}${scopeNote.ar}`),
           summary: bi(`Median ${fmt(quantile(x, 0.5))}, Q1 ${fmt(quantile(x, 0.25))}, Q3 ${fmt(quantile(x, 0.75))}.`, `الوسيط ${fmt(quantile(x, 0.5))}، Q1 ${fmt(quantile(x, 0.25))}، Q3 ${fmt(quantile(x, 0.75))}.`),
           chart: { kind: 'box', groups: [{ label: Y.en, values: x }], xLabel: '', yLabel: yy },
           r: `ggplot(${rFilter(p.filters)}, aes(y = ${yy})) + geom_boxplot()`,
@@ -481,7 +481,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       return {
         ...base,
         title: bi(`${Y.en} by ${G.en}${scopeNote.en}`, `${Y.ar} حسب ${G.ar}${scopeNote.ar}`),
-        summary: bi(`Highest mean: "${means[0].l}" (${fmt(means[0].m)}); lowest: "${means[means.length - 1].l}" (${fmt(means[means.length - 1].m)}). Ask "compare ${yy} by ${g}" for the significance test.`, `أعلى متوسط: «${means[0].l}» (${fmt(means[0].m)})، وأقل متوسط: «${means[means.length - 1].l}» (${fmt(means[means.length - 1].m)}). اطلب «قارن ${yy} حسب ${g}» عشان الاختبار الإحصائي.`),
+        summary: bi(`Highest mean: "${means[0].l}" (${fmt(means[0].m)}); lowest: "${means[means.length - 1].l}" (${fmt(means[means.length - 1].m)}). Ask "compare ${yy} by ${g}" for the significance test.`, `أعلى متوسط: «${means[0].l}» (${fmt(means[0].m)})، وأقل متوسط: «${means[means.length - 1].l}» (${fmt(means[means.length - 1].m)}). اطلب «قارن ${yy} حسب ${g}» لإجراء الاختبار الإحصائي.`),
         chart: { kind: 'box', groups, xLabel: g, yLabel: yy },
         r: `ggplot(${rFilter(p.filters)}, aes(x = factor(${g}), y = ${yy})) + geom_boxplot()`,
       };
@@ -492,7 +492,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       const nums = p.vars.filter(isNumeric) as ColumnName[];
       if (nums.length < 2) {
         if (nums.length === 1 && p.intent === 'correlation') nums.push(nums[0] === 'G3' ? 'G2' : 'G3');
-        else return fail('Name two numeric columns, for example "scatter of G2 and G3".', 'سمّي عمودين رقميين، مثلًا «انتشار بين G2 و G3».');
+        else return fail('Name two numeric columns, for example "scatter of G2 and G3".', 'اذكر عمودين رقميين، مثلًا «انتشار بين G2 و G3».');
       }
       const [xv, yv] = nums.includes('G3') && nums[0] === 'G3' ? [nums[1], nums[0]] : [nums[0], nums[1]];
       const x = numCol(scope, xv), y = numCol(scope, yv);
@@ -505,7 +505,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi(`${varLabel(xv).en} vs ${varLabel(yv).en}${scopeNote.en}`, `${varLabel(xv).ar} مقابل ${varLabel(yv).ar}${scopeNote.ar}`),
         summary: bi(
           `Pearson r = ${fmt(r, 3)} (${strength[0]}, ${r > 0 ? 'positive' : 'negative'}), p ${fmtP(ct.p)}. ${ct.p < 0.05 ? 'The relationship is statistically significant.' : 'Not significant at α = 0.05.'} Fitted line: ${yv} = ${fmt(lm.coef[0].estimate)} + ${fmt(lm.coef[1].estimate)} × ${xv} (R² = ${fmt(lm.r2, 3)}).`,
-          `معامل بيرسون r = ${fmt(r, 3)} (علاقة ${strength[1]} و${r > 0 ? 'طردية' : 'عكسية'})، p ${fmtP(ct.p)}. ${ct.p < 0.05 ? 'العلاقة دالة إحصائيًا.' : 'مش دالة عند α = 0.05.'} خط الانحدار: ${yv} = ${fmt(lm.coef[0].estimate)} + ${fmt(lm.coef[1].estimate)} × ${xv} (R² = ${fmt(lm.r2, 3)}).`,
+          `معامل بيرسون r = ${fmt(r, 3)} (علاقة ${strength[1]} و${r > 0 ? 'طردية' : 'عكسية'})، p ${fmtP(ct.p)}. ${ct.p < 0.05 ? 'العلاقة دالة إحصائيًا.' : 'غير دالة عند α = 0.05.'} خط الانحدار: ${yv} = ${fmt(lm.coef[0].estimate)} + ${fmt(lm.coef[1].estimate)} × ${xv} (R² = ${fmt(lm.r2, 3)}).`,
         ),
         stats: [{ label: bi('r', 'r'), value: fmt(r, 3) }, { label: bi('p-value', 'قيمة p'), value: fmtP(ct.p) }, { label: bi('95% CI', 'فترة الثقة'), value: `[${fmt(ct.ci[0], 3)}, ${fmt(ct.ci[1], 3)}]` }, { label: bi('R²', 'R²'), value: fmt(lm.r2, 3) }],
         chart: { kind: 'scatter', points: scope.map((s, i) => ({ x: x[i], y: y[i], fail: s.G3 < 10 })), xLabel: xv, yLabel: yv, fit: { a: lm.coef[0].estimate, b: lm.coef[1].estimate } },
@@ -523,7 +523,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi(`One-sample t-test: is mean ${v} different from ${mu}?`, `اختبار t لعينة واحدة: هل متوسط ${v} مختلف عن ${mu}؟`),
         summary: bi(
           `Mean = ${fmt(Number(t.estimate))} vs μ0 = ${mu}: t = ${fmt(t.statistic)}, df = ${fmt(t.df, 0)}, p ${fmtP(t.p)}. ${t.p < 0.05 ? `Reject H0: the mean is significantly ${Number(t.estimate) > mu ? 'above' : 'below'} ${mu}.` : 'Keep H0: no significant difference.'}`,
-          `المتوسط = ${fmt(Number(t.estimate))} مقابل μ0 = ${mu}: t = ${fmt(t.statistic)}، df = ${fmt(t.df, 0)}، p ${fmtP(t.p)}. ${t.p < 0.05 ? `بنرفض H0: المتوسط ${Number(t.estimate) > mu ? 'أعلى' : 'أقل'} من ${mu} بشكل دال.` : 'ما بنرفض H0: ما في فرق دال.'}`,
+          `المتوسط = ${fmt(Number(t.estimate))} مقابل μ0 = ${mu}: t = ${fmt(t.statistic)}، df = ${fmt(t.df, 0)}، p ${fmtP(t.p)}. ${t.p < 0.05 ? `نرفض H0: المتوسط ${Number(t.estimate) > mu ? 'أعلى' : 'أقل'} من ${mu} بشكل دال.` : 'لا نرفض H0: لا يوجد فرق دال.'}`,
         ),
         stats: [{ label: bi('t', 't'), value: fmt(t.statistic) }, { label: bi('df', 'df'), value: fmt(t.df, 0) }, { label: bi('p-value', 'قيمة p'), value: fmtP(t.p) }, { label: bi('95% CI', 'فترة الثقة'), value: `[${fmt(t.ci[0])}, ${fmt(t.ci[1])}]` }],
         chart: { kind: 'histogram', values: x, label: v, markers: [{ x: Number(t.estimate), label: `mean ${fmt(Number(t.estimate))}` }, { x: mu, label: `μ0 = ${mu}` }] },
@@ -540,7 +540,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi(`Paired t-test: ${other} vs G1`, `اختبار t المزدوج: ${other} مقابل G1`),
         summary: bi(
           `Mean change ${other} − G1 = ${fmt(Number(t.estimate), 3)}: t = ${fmt(t.statistic)}, df = ${fmt(t.df, 0)}, p ${fmtP(t.p)}. ${t.p < 0.05 ? 'The change is statistically significant.' : 'No significant change.'}`,
-          `متوسط التغيّر ${other} − G1 = ${fmt(Number(t.estimate), 3)}: t = ${fmt(t.statistic)}، df = ${fmt(t.df, 0)}، p ${fmtP(t.p)}. ${t.p < 0.05 ? 'التغيّر دال إحصائيًا.' : 'ما في تغيّر دال.'}`,
+          `متوسط التغيّر ${other} − G1 = ${fmt(Number(t.estimate), 3)}: t = ${fmt(t.statistic)}، df = ${fmt(t.df, 0)}، p ${fmtP(t.p)}. ${t.p < 0.05 ? 'التغيّر دال إحصائيًا.' : 'لا يوجد تغيّر دال.'}`,
         ),
         stats: [{ label: bi('Mean diff', 'متوسط الفرق'), value: fmt(Number(t.estimate), 3) }, { label: bi('t', 't'), value: fmt(t.statistic) }, { label: bi('p-value', 'قيمة p'), value: fmtP(t.p) }],
         chart: { kind: 'histogram', values: a.map((v, i) => v - b[i]), label: `${other} − G1`, markers: [{ x: 0, label: '0' }] },
@@ -563,7 +563,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
           title: bi(`Chi-square test: ${varLabel(a).en} × ${varLabel(b).en}`, `اختبار كاي تربيع: ${varLabel(a).ar} × ${varLabel(b).ar}`),
           summary: bi(
             `χ² = ${fmt(c.statistic)}, df = ${c.df}, p ${fmtP(c.p)}, Cramér's V = ${fmt(c.cramerV, 3)}. ${c.p < 0.05 ? 'Reject H0: the two variables are related.' : 'Keep H0: no evidence that they are related.'}${c.minExpected < 5 ? ' Some expected counts are below 5, so treat the p-value with care.' : ''}`,
-            `χ² = ${fmt(c.statistic)}، df = ${c.df}، p ${fmtP(c.p)}، Cramér's V = ${fmt(c.cramerV, 3)}. ${c.p < 0.05 ? 'بنرفض H0: المتغيرين مرتبطين.' : 'ما بنرفض H0: ما في دليل على ارتباط.'}${c.minExpected < 5 ? ' بعض القيم المتوقعة أقل من 5، فخلي بالك من قيمة p.' : ''}`,
+            `χ² = ${fmt(c.statistic)}، df = ${c.df}، p ${fmtP(c.p)}، Cramér's V = ${fmt(c.cramerV, 3)}. ${c.p < 0.05 ? 'نرفض H0: المتغيران مرتبطان.' : 'لا نرفض H0: لا يوجد دليل على ارتباط.'}${c.minExpected < 5 ? ' بعض القيم المتوقعة أقل من 5، فخلي بالك من قيمة p.' : ''}`,
           ),
           stats: [{ label: bi('χ²', 'χ²'), value: fmt(c.statistic) }, { label: bi('df', 'df'), value: String(c.df) }, { label: bi('p-value', 'قيمة p'), value: fmtP(c.p) }, { label: bi("Cramér's V", "Cramér's V"), value: fmt(c.cramerV, 3) }],
           table: { head: [`${a} \\ ${b}`, ...lb], rows: la.map((l, i) => [l, ...obs[i]]) },
@@ -575,7 +575,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       }
       const { y, g } = roles(vars.length ? vars : ['G3']);
       const yy = y ?? 'G3';
-      if (!g || g === yy) return fail('Tell me what to compare, for example "compare final grade by sex".', 'احكيلي شو بدك تقارن، مثلًا «قارن العلامة حسب الجنس».');
+      if (!g || g === yy) return fail('Tell me what to compare, for example "compare final grade by sex".', 'حدّد ما تريد مقارنته، مثلًا «قارن العلامة حسب الجنس».');
       const lv = levelsOf(scope, g);
       const groups = groupBy(numCol(scope, yy), strCol(scope, g), lv);
       const box: ChartSpec = { kind: 'box', groups: groups.map((gr) => ({ label: gr.level, values: gr.values })), xLabel: g, yLabel: yy };
@@ -587,7 +587,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
           title: bi(`Welch two-sample t-test: ${yy} by ${g}`, `اختبار t لعينتين: ${yy} حسب ${g}`),
           summary: bi(
             `${groups[0].level}: ${fmt(m1)} vs ${groups[1].level}: ${fmt(m2)} (difference ${fmt(Math.abs(m1 - m2))}). t = ${fmt(t.statistic)}, df = ${fmt(t.df, 1)}, p ${fmtP(t.p)}, Cohen's d = ${fmt(Math.abs(t.d))}. ${t.p < 0.05 ? `Reject H0: ${g} is linked to ${yy}.` : `Keep H0: no significant difference in ${yy} by ${g}.`}`,
-            `${groups[0].level}: ${fmt(m1)} مقابل ${groups[1].level}: ${fmt(m2)} (الفرق ${fmt(Math.abs(m1 - m2))}). t = ${fmt(t.statistic)}، df = ${fmt(t.df, 1)}، p ${fmtP(t.p)}، Cohen's d = ${fmt(Math.abs(t.d))}. ${t.p < 0.05 ? `بنرفض H0: ${g} مرتبط بـ ${yy}.` : `ما بنرفض H0: ما في فرق دال بـ ${yy} حسب ${g}.`}`,
+            `${groups[0].level}: ${fmt(m1)} مقابل ${groups[1].level}: ${fmt(m2)} (الفرق ${fmt(Math.abs(m1 - m2))}). t = ${fmt(t.statistic)}، df = ${fmt(t.df, 1)}، p ${fmtP(t.p)}، Cohen's d = ${fmt(Math.abs(t.d))}. ${t.p < 0.05 ? `نرفض H0: ${g} مرتبط بـ ${yy}.` : `لا نرفض H0: لا يوجد فرق دال في ${yy} حسب ${g}.`}`,
           ),
           stats: [{ label: bi('t', 't'), value: fmt(t.statistic) }, { label: bi('df', 'df'), value: fmt(t.df, 1) }, { label: bi('p-value', 'قيمة p'), value: fmtP(t.p) }, { label: bi('95% CI', 'فترة الثقة'), value: `[${fmt(t.ci[0])}, ${fmt(t.ci[1])}]` }],
           chart: box,
@@ -602,7 +602,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi(`One-way ANOVA: ${yy} by ${g}`, `تحليل التباين الأحادي: ${yy} حسب ${g}`),
         summary: bi(
           `F = ${fmt(a.F)}, df = ${a.df1}, ${a.df2}, p ${fmtP(a.p)}, η² = ${fmt(a.eta2, 3)}. ${a.p < 0.05 ? `Reject H0: at least one group differs. Highest mean: "${best[0].level}" (${fmt(best[0].mean)}); lowest: "${best[best.length - 1].level}" (${fmt(best[best.length - 1].mean)}).` : 'Keep H0: the group means do not differ significantly.'}`,
-          `F = ${fmt(a.F)}، df = ${a.df1}، ${a.df2}، p ${fmtP(a.p)}، η² = ${fmt(a.eta2, 3)}. ${a.p < 0.05 ? `بنرفض H0: على الأقل مجموعة مختلفة. أعلى متوسط «${best[0].level}» (${fmt(best[0].mean)})، وأقل متوسط «${best[best.length - 1].level}» (${fmt(best[best.length - 1].mean)}).` : 'ما بنرفض H0: متوسطات المجموعات ما بتختلف بشكل دال.'}`,
+          `F = ${fmt(a.F)}، df = ${a.df1}، ${a.df2}، p ${fmtP(a.p)}، η² = ${fmt(a.eta2, 3)}. ${a.p < 0.05 ? `نرفض H0: على الأقل مجموعة مختلفة. أعلى متوسط «${best[0].level}» (${fmt(best[0].mean)})، وأقل متوسط «${best[best.length - 1].level}» (${fmt(best[best.length - 1].mean)}).` : 'لا نرفض H0: متوسطات المجموعات لا تختلف بشكل دال.'}`,
         ),
         stats: [{ label: bi('F', 'F'), value: fmt(a.F) }, { label: bi('df', 'df'), value: `${a.df1}, ${a.df2}` }, { label: bi('p-value', 'قيمة p'), value: fmtP(a.p) }, { label: bi('η²', 'η²'), value: fmt(a.eta2, 3) }],
         table: { head: ['Tukey pair', 'diff', 'p adj'], rows: tk.map((r) => [r.pair, fmt(r.diff), fmtP(r.padj)]) },
@@ -631,7 +631,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
         title: bi(`Linear regression: ${yv} ~ ${xs.join(' + ')}`, `انحدار خطي: ${yv} ~ ${xs.join(' + ')}`),
         summary: bi(
           `R² = ${fmt(lm.r2, 3)} (adjusted ${fmt(lm.adj_r2, 3)}): the model explains ${pct(lm.r2)} of the variation in ${yv}. F = ${fmt(lm.F)}, p ${fmtP(lm.p_overall)}. Typical error ±${fmt(lm.sigma)}.`,
-          `R² = ${fmt(lm.r2, 3)} (المعدّل ${fmt(lm.adj_r2, 3)}): النموذج بيفسّر ${pct(lm.r2)} من التباين في ${yv}. F = ${fmt(lm.F)}، p ${fmtP(lm.p_overall)}. الخطأ المعتاد ±${fmt(lm.sigma)}.`,
+          `R² = ${fmt(lm.r2, 3)} (المعدّل ${fmt(lm.adj_r2, 3)}): النموذج يفسّر ${pct(lm.r2)} من التباين في ${yv}. F = ${fmt(lm.F)}، p ${fmtP(lm.p_overall)}. الخطأ المعتاد ±${fmt(lm.sigma)}.`,
         ),
         stats: [{ label: bi('R²', 'R²'), value: fmt(lm.r2, 3) }, { label: bi('Adj. R²', 'R² المعدّل'), value: fmt(lm.adj_r2, 3) }, { label: bi('F', 'F'), value: fmt(lm.F) }, { label: bi('p-value', 'قيمة p'), value: fmtP(lm.p_overall) }],
         table: { head: ['term', 'estimate', 'SE', 't', 'p'], rows: lm.coef.map((c) => [c.term, fmt(c.estimate, 3), fmt(c.se, 3), fmt(c.t), fmtP(c.p)]) },
@@ -691,7 +691,7 @@ export function answer(rows: readonly Student[], p: Parsed): Answer {
       return {
         ...base,
         title: bi(`${p.order === 'asc' ? 'Lowest' : 'Highest'} ${lim} by ${v}${scopeNote.en}`, `${p.order === 'asc' ? 'أقل' : 'أعلى'} ${lim} حسب ${v}${scopeNote.ar}`),
-        summary: bi(`Sorted ${p.order === 'asc' ? 'ascending' : 'descending'} by ${v}.`, `مرتبين ${p.order === 'asc' ? 'تصاعديًا' : 'تنازليًا'} حسب ${v}.`),
+        summary: bi(`Sorted ${p.order === 'asc' ? 'ascending' : 'descending'} by ${v}.`, `مرتبون ${p.order === 'asc' ? 'تصاعديًا' : 'تنازليًا'} حسب ${v}.`),
         table: { head: ['#', 'school', 'sex', 'age', v, 'G3'], rows: sorted.map(({ s, i }) => [i + 1, s.school, s.sex, s.age, Number(s[v]), s.G3]) },
         r: `head(${rFilter(p.filters)}[order(${p.order === 'asc' ? '' : '-'}${rFilter(p.filters)}$${v}), ], ${lim})`,
       };

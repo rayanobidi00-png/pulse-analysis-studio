@@ -25,7 +25,7 @@ export function ChartFrame({ title, subtitle, desc, width, height, children, dow
   return (
     <figure className={`min-w-0 ${className ?? ''}`}>
       <figcaption className="mb-2">
-        <p className="font-display text-base font-bold leading-snug sm:text-lg">{title}</p>
+        <p className="serif text-[17px] font-semibold leading-snug sm:text-[18px]">{title}</p>
         {subtitle && <p className="mt-0.5 text-sm text-muted">{subtitle}</p>}
       </figcaption>
       {legend && <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">{legend}</div>}

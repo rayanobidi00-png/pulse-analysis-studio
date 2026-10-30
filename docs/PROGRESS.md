@@ -26,3 +26,8 @@
 - Added `src/data/backend.ts` (Supabase or bundled CSV), `supabase/migrations/20261030000000_pulse_schema.sql`, `supabase/push.mjs` (`npm run db:push`), `.env.example`, and optional Cloudflare Pages deploy in the workflow.
 - New app shell and dashboard home; Ask PULSE takes requests from the top bar (`#/ask?q=…`).
 - Next: owner creates the Supabase project and adds the keys as repository secrets.
+
+## 2026-10-30 · Publication-style redesign
+- Removed Supabase, pg, migrations and secrets; the bundled CSV is the only data source.
+- New site header, Analysis menu, chapter tabs, footer; landing page with lead figure, key numbers, four findings, figures, chapter index and an "Ask the data" box; article-style chapter headers and previous/next chapter links.
+- Ask page reworked as a search tool; Arabic answers rewritten in formal Arabic.
