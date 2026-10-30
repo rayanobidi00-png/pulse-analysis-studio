@@ -39,6 +39,12 @@ export function Logo({ size = 30 }: { size?: number }) {
 }
 
 const TOOL_ICONS: Record<string, ReactNode> = {
+  '/ask': (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M4 5h16v11H9l-5 4z" strokeLinejoin="round" />
+      <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" strokeLinecap="round" strokeWidth="2.4" />
+    </svg>
+  ),
   '/sql': (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <ellipse cx="12" cy="5.5" rx="7" ry="2.5" />
@@ -185,9 +191,9 @@ export function Layout({ children }: { children: ReactNode }) {
             <StageStepper />
           </div>
           <div className="ms-auto flex items-center gap-2 xl:ms-0">
-            {home && (
-              <Link to="/data" className="btn-primary hidden sm:inline-flex">
-                {L('Start the analysis', 'ابدأ التحليل')}
+            {pathname !== '/ask' && (
+              <Link to="/ask" className="btn-primary hidden sm:inline-flex">
+                <span aria-hidden>✦</span> {L('Ask PULSE', 'اسأل PULSE')}
               </Link>
             )}
             <button type="button" className="btn-ghost px-3" onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} lang={lang === 'en' ? 'ar' : 'en'}>

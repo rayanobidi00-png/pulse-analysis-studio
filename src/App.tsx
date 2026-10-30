@@ -16,6 +16,7 @@ const Sql = lazy(() => import('./pages/Sql'));
 const RunR = lazy(() => import('./pages/RunR'));
 const Report = lazy(() => import('./pages/Report'));
 const About = lazy(() => import('./pages/About'));
+const Ask = lazy(() => import('./pages/Ask'));
 
 function Loading() {
   return (
@@ -47,6 +48,7 @@ export function App() {
                 <Route path="/r" element={<RunR />} />
                 <Route path="/report" element={<Report />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/ask" element={<Ask />} />
                 <Route path="*" element={<Home />} />
               </Routes>
             </Suspense>

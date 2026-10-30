@@ -106,6 +106,39 @@ export default function Home() {
           </ol>
         </div>
 
+        <div className="page-hero mt-16">
+          <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+            <div>
+              <p className="mono text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#2ec4ae]">{L('New · Ask PULSE', 'جديد · اسأل PULSE')}</p>
+              <h2 className="mt-3 text-[30px] font-extrabold leading-tight text-white sm:text-[40px]">
+                {L('Ask for an analysis in plain words. It does it.', 'اطلب التحليل بكلامك، وهو بنفّذه.')}
+              </h2>
+              <p className="mt-3 max-w-xl text-[15.5px] text-[#b8c2d6]">
+                {L(
+                  'Type what an analyst would do, in English or Arabic, and get the result, a chart, an explanation and the R code.',
+                  'اكتب اللي بيعمله المحلل، بالعربي أو بالإنجليزي، وبتطلعلك النتيجة والرسمة والتفسير وكود R.',
+                )}
+              </p>
+              <Link to="/ask" className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-[#2ec4ae] px-5 font-semibold text-[#06201c]">
+                {L('Open Ask PULSE', 'افتح اسأل PULSE')} <span aria-hidden>{dir === 'rtl' ? '←' : '→'}</span>
+              </Link>
+            </div>
+            <ul className="grid gap-2.5">
+              {[
+                ['Clean the data', 'نظّف البيانات'],
+                ['Box plot of final grade by study time', 'بوكس بلوت للعلامة حسب ساعات الدراسة'],
+                ['Does sex affect the final grade?', 'هل الجنس بأثر على العلامة؟'],
+                ['How many girls failed?', 'كم بنت رسبت؟'],
+              ].map(([en, ar]) => (
+                <li key={en} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-[15px] text-white">
+                  <span aria-hidden className="text-[#2ec4ae]">✦</span>
+                  {L(en, ar)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
         <div className="mt-16">
           <p className="eyebrow">{L('The pipeline', 'مسار التحليل')}</p>
           <ol className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
