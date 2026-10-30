@@ -1,0 +1,1 @@
+function p(e,f){const o=new RegExp(`(/\\*\\*[\\s\\S]*?\\*/\\n)?export function ${f}\\b`).exec(e);if(!o)return e;const t=o.index,x=e.indexOf("{",e.indexOf(")",t));let i=0;for(let n=x;n<e.length;n++)if(e[n]==="{")i++;else if(e[n]==="}"&&(i--,i===0))return e.slice(t,n+1);return e.slice(t)}export{p as e};
